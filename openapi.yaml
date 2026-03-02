@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: STAC API Multi-Tenant Catalogs Endpoint Extension
-  version: 1.0.0-proposal
+  version: 1.0.0-beta.2
   description: |
     An extension that adds a dedicated `/catalogs` endpoint to support a 
     Multi-Tenant architecture. It allows a STAC API to act as a registry for 
@@ -109,18 +109,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/CatalogsList'
     post:
-      summary: Create a Sub-Catalog
-      description: Creates a new catalog and links it as a child of {catalogId}.
+      summary: Create or Link a Sub-Catalog
+      description: |
+        Creates a new catalog and links it as a child of {catalogId}, OR links 
+        an existing catalog by passing its ID (Link by Reference).
       operationId: createSubCatalog
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Catalog'
+              oneOf:
+                - $ref: '#/components/schemas/Catalog'
+                - $ref: '#/components/schemas/ObjectUri'
       responses:
         '201':
           description: Sub-Catalog created and linked
+        '200':
+          description: Existing Sub-Catalog successfully linked
 
   /catalogs/{catalogId}/catalogs/{subCatalogId}:
     parameters:
@@ -193,18 +199,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Collections'
     post:
-      summary: Create a Collection in this Catalog
-      description: Creates a collection and links it as a child of {catalogId}.
+      summary: Create or Link a Collection in this Catalog
+      description: |
+        Creates a new collection and links it as a child of {catalogId}, OR links 
+        an existing collection by passing its ID (Link by Reference).
       operationId: createCatalogCollection
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Collection'
+              oneOf:
+                - $ref: '#/components/schemas/Collection'
+                - $ref: '#/components/schemas/ObjectUri'
       responses:
         '201':
           description: Collection created and linked
+        '200':
+          description: Existing Collection successfully linked
 
   # ----------------------------------------------------------------------
   # 7. SCOPED SINGLE COLLECTION
@@ -394,6 +406,15 @@ components:
           type: string
         href:
           type: string
-      Queryables:
-        type: object
-        description: A JSON Schema object for queryables
+    ObjectUri:
+      type: object
+      description: Minimal payload for linking existing resources by ID.
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: The ID of the existing resource to link.
+    Queryables:
+      type: object
+      description: A JSON Schema object for queryables
