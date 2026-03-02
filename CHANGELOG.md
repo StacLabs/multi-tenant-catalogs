@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.0-beta.2] - 2026-03-02
+
 ### Changed
 - **Linking Logic:** Updated `POST /catalogs/{id}/collections` to support a **"Link by Reference"** payload (ID only). This allows clients to link existing collections to new catalogs without re-uploading the full metadata body.
 - **Deletion Safety:** Explicitly defined `DELETE` operations on `/catalogs/...` endpoints as **"Unlink"** actions. Added normative language guaranteeing that these endpoints must never delete the underlying Collection or Item data from the database.
@@ -22,3 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Updated Conformance Class URIs to match the new versioning.
+
+[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.2...main
+[v1.0.0-beta.2]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.1...v1.0.0-beta.2
+[v1.0.0-beta.1]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/releases/tag/v1.0.0-beta.1
