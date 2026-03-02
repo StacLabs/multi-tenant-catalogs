@@ -3,7 +3,8 @@
 - **Title:** Multi-Tenant Catalogs Endpoint
 - **Conformance Classes:**
   - `https://api.stacspec.org/v1.0.0/core` (required)
-  - `https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/children` (recommended)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
@@ -23,9 +24,10 @@ It adds a dedicated registry for **logical sub-catalogs**, allowing a single API
 While technically "Multi-Tenant" (capable of hosting isolated providers), this architecture inherently supports **Virtual Organization**. It allows Collections to be shared across multiple catalogs simultaneously (Poly-hierarchy), enabling users to create curated "playlists," semantic themes, or project-specific views without duplicating the underlying data.
 
 
+### The Management Plane (Optional)
+This extension is not just for *viewing* hierarchy; it provides an **Optional Transactional Management Plane** to build it. 
 
-### The Management Plane
-This extension is not just for *viewing* hierarchy; it provides a **Transactional Management Plane** to build it. It defines endpoints to:
+APIs designed strictly for public, read-only discovery SHOULD NOT implement the `/transaction` conformance class or expose the `POST`, `PUT`, and `DELETE` endpoints. If an implementation chooses to support the Management Plane, it MUST advertise the `.../multi-tenant-catalogs/transaction` conformance class and define endpoints to:
 * **Create** arbitrary catalog structures.
 * **Link** existing collections to multiple parents (Poly-hierarchy).
 * **Update** metadata and organization dynamically.
@@ -56,7 +58,8 @@ To ensure data consistency and reduce storage overhead, implementations SHOULD g
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
 
 ### Transactions (Management)
-These endpoints allow for the dynamic creation and deletion of the federation structure.
+These endpoints allow for the dynamic creation and deletion of the federation structure. 
+**Note:** These endpoints are OPTIONAL and MUST only be exposed if the API advertises the `.../multi-tenant-catalogs/transaction` conformance class.
 
 | Method | URI | Description |
 | :--- | :--- | :--- |
@@ -246,7 +249,8 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
   "description": "A standard STAC API that also supports multi-tenant catalogs.",
   "conformsTo": [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs"
+    "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction"
   ],
   "links": [
     {

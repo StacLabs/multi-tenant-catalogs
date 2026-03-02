@@ -8,6 +8,10 @@ info:
     multiple independent sub-catalogs (recursive hierarchy) without altering 
     the standard behavior of the API Root.
     
+    **Conformance Classes:**
+    * Core (Read-Only): `.../multi-tenant-catalogs`
+    * Management (Optional): `.../multi-tenant-catalogs/transaction`
+    
     Includes "Safety-First" transaction logic where deletions via this endpoint 
     are strictly organizational (unlinking) and never destructive to data.
 paths:
@@ -16,6 +20,8 @@ paths:
   # ----------------------------------------------------------------------
   /catalogs:
     get:
+      tags:
+        - "Discovery (Core)"
       summary: List available sub-catalogs
       operationId: getCatalogs
       responses:
@@ -26,6 +32,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CatalogsList'
     post:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Register a new Root Catalog
       operationId: createCatalog
       requestBody:
@@ -51,6 +59,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/catalogId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get the Landing Page for a specific sub-catalog
       operationId: getCatalog
       responses:
@@ -61,6 +71,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/LandingPage'
     put:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Update Catalog Metadata
       description: |
         Updates the catalog's title, description, and other metadata.
@@ -82,6 +94,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Catalog'
     delete:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Disband a Catalog
       description: |
         Deletes the Catalog resource. All child collections and sub-catalogs are 
@@ -98,6 +112,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/catalogId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: List sub-catalogs of this catalog
       description: Returns only the child catalogs (hierarchy traversal).
       operationId: getSubCatalogs
@@ -109,6 +125,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CatalogsList'
     post:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Create or Link a Sub-Catalog
       description: |
         Creates a new catalog and links it as a child of {catalogId}, OR links 
@@ -133,6 +151,8 @@ paths:
       - $ref: '#/components/parameters/catalogId'
       - $ref: '#/components/parameters/subCatalogId'
     delete:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Unlink a Sub-Catalog
       description: |
         Removes the link between the parent and sub-catalog. 
@@ -155,6 +175,8 @@ paths:
           type: string
           enum: [Catalog, Collection]
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get all children (Catalogs and Collections)
       operationId: getCatalogChildren
       responses:
@@ -172,6 +194,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/catalogId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get conformance classes for this specific sub-catalog
       operationId: getCatalogConformance
       responses:
@@ -189,6 +213,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/catalogId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: List collections within a specific sub-catalog
       operationId: getCatalogCollections
       responses:
@@ -199,6 +225,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Collections'
     post:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Create or Link a Collection in this Catalog
       description: |
         Creates a new collection and links it as a child of {catalogId}, OR links 
@@ -226,6 +254,8 @@ paths:
       - $ref: '#/components/parameters/catalogId'
       - $ref: '#/components/parameters/collectionId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get a specific collection definition
       operationId: getCatalogCollection
       responses:
@@ -236,6 +266,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Collection'
     delete:
+      tags:
+        - "Management (Optional Transactions)"
       summary: Unlink a Collection
       description: |
         Removes the link between the catalog and collection. 
@@ -253,6 +285,8 @@ paths:
       - $ref: '#/components/parameters/catalogId'
       - $ref: '#/components/parameters/collectionId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get items from a collection within a sub-catalog
       operationId: getCatalogCollectionItems
       responses:
@@ -276,6 +310,8 @@ paths:
         schema: 
           type: string
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get a single item
       operationId: getCatalogItem
       responses:
@@ -293,6 +329,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/catalogId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get queryable fields for this sub-catalog
       operationId: getCatalogQueryables
       responses:
@@ -311,6 +349,8 @@ paths:
       - $ref: '#/components/parameters/catalogId'
       - $ref: '#/components/parameters/collectionId'
     get:
+      tags:
+        - "Discovery (Core)"
       summary: Get queryable fields for a specific collection
       operationId: getCatalogCollectionQueryables
       responses:

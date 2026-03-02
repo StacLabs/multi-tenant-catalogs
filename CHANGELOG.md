@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Optional Transactions Conformance Class:** Explicitly separated the management plane (`POST`, `PUT`, `DELETE`) into an optional `https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction` conformance class. This ensures public-facing APIs can safely implement the core extension as read-only by default without violating the specification.
+
 ## [v1.0.0-beta.2] - 2026-03-02
 
 ### Changed
