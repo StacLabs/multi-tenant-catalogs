@@ -38,8 +38,9 @@ A core tenet of this extension is **Data Safety**. It strictly separates "Organi
 * **The `/catalogs` endpoints are for Organization:** Operations here (like deleting a catalog) are **Non-Destructive**. You can disband a catalog or unlink a collection, and the extension guarantees that **no actual data (Collections or Items) is ever deleted**. If a resource is unlinked from its last parent, it is automatically adopted by the Root Catalog to prevent data loss.
 * **The `/collections` endpoints are for Data:** Actual destruction of data is reserved for the core STAC API endpoints.
 
-**Note on Dynamic Linking:**
-To ensure data consistency and reduce storage overhead, implementations SHOULD generate hierarchical links (e.g., `rel="child"`, `rel="parent"`) dynamically at runtime based on the requested endpoint context, rather than persisting static link objects in the database.
+**Note on Dynamic Linking:** To ensure data consistency, support poly-hierarchy, and accommodate flat URL routing, implementations SHOULD NOT persist static `rel="child"` or `rel="parent"` link objects in the database. 
+
+Instead, implementations SHOULD maintain a backend mapping of parent-child relationships (e.g., an array of `parent_ids` on the catalog record) and dynamically generate the `rel="parent"` and `rel="child"` HATEOAS links at runtime based on the requested endpoint.
 
 ## Endpoints
 
@@ -78,7 +79,10 @@ This extension explicitly supports **Poly-hierarchy**, allowing a single STAC Co
 Unlike a standard file system where a folder can only live in one path, this architecture allows for logical grouping across different dimensions without duplicating data.
 
 * **Example:** A `Sentinel-2` collection can be linked as a child of the `USGS` Catalog (Provider) AND the `Optical-Data` Catalog (Theme).
-* **Behavior:** When accessing a Collection via a specific Catalog endpoint (e.g., `/catalogs/{id}/collections/{col_id}`), the API SHOULD preserve the navigation context by generating a `rel="parent"` link pointing back to that specific Catalog.
+* **Contextual Navigation (Scoped Route):** When accessing a Collection via a scoped endpoint (e.g., `/catalogs/{id}/collections/{col_id}`), the API MUST generate a single `rel="parent"` link pointing exclusively back to that specific `{catalogId}`. It MUST NOT list the collection's other parents, as this would break the user's current contextual breadcrumb trail in STAC Browser.
+* **Global Discovery (Global Route):** When accessing a Collection via the global root endpoint (`/collections/{collectionId}`), the API MUST include a `rel="parent"` link for every Catalog that claims this collection as a child, **provided the current authenticated user has read access to those parent catalogs.**
+  * If the API implements Role-Based Access Control (RBAC), it MUST filter out links to restricted catalogs to prevent information disclosure.
+  * If the collection is not linked to any sub-catalogs, or if the user lacks access to all of its parent catalogs, the `rel="parent"` MUST fallback and point to the Global Root (`/`).
 
 ## Transaction Behavior
 
@@ -164,16 +168,26 @@ This is the entry point.
 - `rel="service-desc"`: Points to the OpenAPI definition.
 
 ### 2. The Sub-Catalog (`/catalogs/{catalogId}`)
-This resource acts as the **Landing Page** for the provider.
-- `rel="self"`: MUST point to `/catalogs/{catalogId}`.
-- `rel="parent"`: MUST point to the Global Root (`/`).
-- `rel="root"`: SHOULD point to the Global Root (`/`) to maintain a single navigation tree.
-- `rel="data"`: MUST point to `/catalogs/{catalogId}/collections`.
-- `rel="children"`: MUST point to `/catalogs/{catalogId}/children` (if Children extension is implemented).
+This resource acts as the Landing Page for the provider or a nested sub-folder.
+* `rel="self"`: MUST point to `/catalogs/{catalogId}`.
+* `rel="parent"`: MUST point to the immediate parent Catalog(s) that this sub-catalog is linked to. If the catalog is part of a poly-hierarchy (has multiple parents), the API MUST include a `rel="parent"` link for each. If it is a top-level sub-catalog with no other parents, it MUST point to the Global Root (`/`).
+* `rel="root"`: MUST point to the Global Root (`/`) to maintain a single navigation tree.
+* `rel="child"`: MUST point to any immediate Sub-Catalogs (`/catalogs/{subId}`) AND any linked Collections (`/catalogs/{catalogId}/collections/{collectionId}`).
+
+### 3. The Global Collection (`/collections/{collectionId}`)
+This resource represents a Collection accessible via the standard STAC core endpoint (flat, global discovery).
+* `rel="self"`: MUST point to `/collections/{collectionId}`.
+* `rel="parent"`: MUST include a `rel="parent"` link for every Catalog that claims this collection as a child. If the collection is not linked to any sub-catalogs, `rel="parent"` MUST point to the Global Root (`/`).
+* `rel="root"`: MUST point to the Global Root (`/`).
 
 ### 4. The Scoped Collection Endpoints (`/catalogs/{catalogId}/collections/{collectionId}/*`)
-This resource, and all of its sub-resources, represents a Collection within the context of a specific Catalog.
-- `rel="alternate"`: MAY be provided to point to the corresponding `/collections/{collectionId}/*` endpoints, and vice versa.
+This resource, and all of its sub-resources, represents a Collection within the context of a specific Catalog. The `rel="parent"` link is locked to the scoped path to preserve contextual breadcrumb navigation.
+* `rel="self"`: MUST point to `/catalogs/{catalogId}/collections/{collectionId}`.
+* `rel="parent"`: MUST point exclusively to `/catalogs/{catalogId}` (the specific parent through which the user navigated). It MUST NOT list other parents, even if the collection belongs to multiple catalogs.
+* `rel="alternate"`: MAY be provided to point to the corresponding `/collections/{collectionId}/*` endpoints, and vice versa.
+
+> [!NOTE]
+> **Contextual vs. Global Navigation:** The distinction between scoped and global endpoints is critical for STAC Browser and other UI clients. Scoped endpoints lock the breadcrumb trail to a single parent for clarity, while global endpoints expose the full poly-hierarchy graph. Implementations MUST respect this distinction when generating `rel="parent"` links.
 
 > [!NOTE]
 > All sub-resources can be considered, accordingly to other STAC API extensions that are implemented.
@@ -199,15 +213,16 @@ This endpoint returns a JSON object structurally similar to a standard `/collect
 {
   "catalogs": [
     {
-      "id": "usgs-landsat",
+      "id": "catalog3",
       "type": "Catalog",
-      "title": "USGS Landsat",
-      "description": "Landsat collections provided by USGS.",
+      "title": "Nested Sub-Catalog",
+      "description": "A nested catalog under catalog2.",
       "stac_version": "1.0.0",
       "links": [
-        { "rel": "self", "href": "https://api.example.com/catalogs/usgs-landsat" },
+        { "rel": "self", "href": "https://api.example.com/catalogs/catalog3" },
         { "rel": "root", "href": "https://api.example.com/" },
-        { "rel": "child", "href": "https://api.example.com/catalogs/usgs-landsat/collections" }
+        { "rel": "parent", "href": "https://api.example.com/catalogs/catalog2" },
+        { "rel": "data", "href": "https://api.example.com/catalogs/catalog3/collections" }
       ]
     },
     {
@@ -219,7 +234,7 @@ This endpoint returns a JSON object structurally similar to a standard `/collect
       "links": [
         { "rel": "self", "href": "https://api.example.com/catalogs/esa-sentinel" },
         { "rel": "root", "href": "https://api.example.com/" },
-        { "rel": "child", "href": "https://api.example.com/catalogs/esa-sentinel/collections" }
+        { "rel": "data", "href": "https://api.example.com/catalogs/esa-sentinel/collections" }
       ]
     }
   ],

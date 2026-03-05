@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: STAC API Multi-Tenant Catalogs Endpoint Extension
-  version: 1.0.0-beta.2
+  version: 1.0.0-beta.3
   description: |
     An extension that adds a dedicated `/catalogs` endpoint to support a 
     Multi-Tenant architecture. It allows a STAC API to act as a registry for 
@@ -62,6 +62,12 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: Get the Landing Page for a specific sub-catalog
+      description: |
+        Returns a STAC Catalog/Landing Page. 
+        **Note on Links:** To support poly-hierarchy and UI traversal (e.g., STAC Browser), 
+        the `links` array is dynamically generated. It MUST include a `rel="child"` link 
+        for each nested sub-catalog/collection, and MAY include multiple `rel="parent"` links 
+        if the catalog is linked to multiple parent catalogs.
       operationId: getCatalog
       responses:
         '200':
@@ -130,7 +136,9 @@ paths:
       summary: Create or Link a Sub-Catalog
       description: |
         Creates a new catalog and links it as a child of {catalogId}, OR links 
-        an existing catalog by passing its ID (Link by Reference).
+        an existing catalog by passing its ID (Link by Reference). 
+        Linking by reference allows for Poly-Hierarchy (Directed Acyclic Graphs), 
+        where a single catalog can have multiple parents.
       operationId: createSubCatalog
       requestBody:
         required: true
@@ -230,7 +238,9 @@ paths:
       summary: Create or Link a Collection in this Catalog
       description: |
         Creates a new collection and links it as a child of {catalogId}, OR links 
-        an existing collection by passing its ID (Link by Reference).
+        an existing collection by passing its ID (Link by Reference). 
+        Linking by reference allows for Poly-Hierarchy (Directed Acyclic Graphs), 
+        where a single collection can belong to multiple catalogs.
       operationId: createCatalogCollection
       requestBody:
         required: true
