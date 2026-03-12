@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Poly-Hierarchy via `rel="related"`**: Implemented `rel="related"` links to expose alternative parents for collections and catalogs belonging to multiple catalogs simultaneously, preserving Directed Acyclic Graph (DAG) traversal for advanced clients.
+
+### Changed
+- **Strict Single `rel="parent"` Linking**: Updated dynamic link generation across all endpoints to strictly enforce a single, contextual `rel="parent"` link based on the request route. This helps ensure backward compatibility with UI clients (like STAC Browser) and protects breadcrumb navigation.
+- **Documentation & OpenAPI**: Updated the extension specification and OpenAPI definitions to formally document the "One Parent, Multiple Related" poly-hierarchy consensus.
+
 ## [v1.0.0-beta.3] - 2026-03-05
 
 ### Added

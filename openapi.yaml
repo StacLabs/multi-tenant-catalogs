@@ -66,8 +66,9 @@ paths:
         Returns a STAC Catalog/Landing Page. 
         **Note on Links:** To support poly-hierarchy and UI traversal (e.g., STAC Browser), 
         the `links` array is dynamically generated. It MUST include a `rel="child"` link 
-        for each nested sub-catalog/collection, and MAY include multiple `rel="parent"` links 
-        if the catalog is linked to multiple parent catalogs.
+        for each nested sub-catalog/collection. It MUST include exactly one `rel="parent"` link 
+        pointing to the context through which it was accessed. Alternative parents in a 
+        poly-hierarchy MUST be represented using `rel="related"` links.
       operationId: getCatalog
       responses:
         '200':
