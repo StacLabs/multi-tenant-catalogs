@@ -3,8 +3,8 @@
 - **Title:** Multi-Tenant Catalogs Endpoint
 - **Conformance Classes:**
   - `https://api.stacspec.org/v1.0.0/core` (required)
-  - `https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs` (required)
-  - `https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs/transaction` (optional)
+  - `https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/children` (recommended)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
@@ -265,8 +265,8 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
   "description": "A standard STAC API that also supports multi-tenant catalogs.",
   "conformsTo": [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs",
-    "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs/transaction"
+    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction"
   ],
   "links": [
     {

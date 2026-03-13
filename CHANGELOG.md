@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.0-beta.4] - 2026-03-13
+
 ### Added
 - **Poly-Hierarchy via `rel="related"`**: Implemented `rel="related"` links to expose alternative parents for collections and catalogs belonging to multiple catalogs simultaneously, preserving Directed Acyclic Graph (DAG) traversal for advanced clients.
 - **Canonical and Duplicate Links:** Added `rel="canonical"` to identify the primary global endpoint (e.g., `/collections/{id}`) for resources accessed via scoped catalog routes. Added `rel="duplicate"` to expose alternative scoped URIs where the identical resource can be accessed, aiding client-side deduplication.
+- **Bidirectional Duplicate Links:** Clarified that global `/collections/{collectionId}` endpoints MAY also include `rel="duplicate"` links to their scoped `/catalogs/{catalogId}/collections/{collectionId}` counterparts.
 
 ### Changed
 - **Strict Single `rel="parent"` Linking**: Updated dynamic link generation across all endpoints to strictly enforce a single, contextual `rel="parent"` link based on the request route. This helps ensure backward compatibility with UI clients (like STAC Browser) and protects breadcrumb navigation.
 - **Documentation & OpenAPI**: Updated the extension specification and OpenAPI definitions to formally document the "One Parent, Multiple Related" poly-hierarchy consensus.
+- **Security Warning**: Changed security note about `rel="duplicate"` links from NOTE to WARNING to better highlight the importance of the security consideration.
 
 ## [v1.0.0-beta.3] - 2026-03-05
 
@@ -43,8 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Updated Conformance Class URIs to match the new versioning.
 
-[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.3...main
-[v1.0.0-beta.3]:
-https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.2...v1.0.0-beta.3
+[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.4...main
+[v1.0.0-beta.4]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.3...v1.0.0-beta.4
+[v1.0.0-beta.3]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [v1.0.0-beta.2]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [v1.0.0-beta.1]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/releases/tag/v1.0.0-beta.1

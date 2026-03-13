@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: STAC API Multi-Tenant Catalogs Endpoint Extension
-  version: 1.0.0-beta.3
+  version: 1.0.0-beta.4
   description: |
     An extension that adds a dedicated `/catalogs` endpoint to support a 
     Multi-Tenant architecture. It allows a STAC API to act as a registry for 
