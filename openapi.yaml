@@ -288,6 +288,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Collection'
+    put:
+      tags:
+        - "Management (Optional Transactions)"
+      summary: Update Collection Metadata
+      description: |
+        Updates the collection's title, description, and other metadata.
+        This operation preserves existing hierarchy links (parent_ids) 
+        unless explicitly modified.
+      operationId: updateCatalogCollection
+      requestBody:
+        description: The updated Collection definition
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Collection'
+      responses:
+        '200':
+          description: Collection updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
     delete:
       tags:
         - "Management (Optional Transactions)"

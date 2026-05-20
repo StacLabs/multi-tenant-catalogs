@@ -70,6 +70,7 @@ These endpoints allow for the dynamic creation and deletion of the federation st
 | `POST` | `/catalogs/{catalogId}/catalogs` | **Link or Create Sub-Catalog.** Links an existing catalog OR creates a new one. |
 | `DELETE` | `/catalogs/{catalogId}/catalogs/{subCatalogId}` | **Unlink Sub-Catalog.** Removes the link to the sub-catalog. **Safety: Does not delete the sub-catalog.** |
 | `POST` | `/catalogs/{catalogId}/collections` | **Link or Create Collection.** Links an existing collection OR creates a new one. |
+| `PUT`  | `/catalogs/{catalogId}/collections/{collectionId}` | **Update Collection.** Updates metadata (Title, Description). **Safety: Preserves existing hierarchy links.** |
 | `DELETE` | `/catalogs/{catalogId}/collections/{collectionId}` | **Unlink Collection.** Removes the link from the parent catalog. **Safety: Never deletes the collection data.** |
 
 ## Poly-Hierarchy (Multi-Parenting)
@@ -95,6 +96,14 @@ Implementations supporting the Transaction endpoints MUST adhere to the followin
 * **Body:** Accepts a standard STAC Catalog JSON object.
 * **Behavior:** Updates the metadata (Title, Description, etc.) of the catalog.
 * **Safety:** This operation MUST NOT modify the structural links (`parent_ids`) of the catalog unless explicitly handled, ensuring the catalog remains in its current hierarchy.
+
+### 2.1. Scoped Collection Update (`PUT /catalogs/{catalogId}/collections/{collectionId}`)
+* **Body:** Accepts a standard STAC Collection JSON object.
+* **Behavior:** Updates the metadata (Title, Description, etc.) of the collection within the scoped catalog context.
+* **Safety:** This operation MUST NOT modify the structural links (`parent_ids`) of the collection unless explicitly handled, ensuring the collection remains in its current hierarchy.
+
+> [!NOTE]
+> To preserve the poly-hierarchy DAG structure, updates to collections SHOULD be performed through scoped routes (`/catalogs/{catalogId}/collections/{collectionId}`) rather than the core STAC route (`/collections/{collectionId}`). The core route is flat and does not maintain parent-child relationships, so updates through that route may not properly preserve the hierarchical context.
 
 ### 3. Sub-Catalog Creation (`POST /catalogs/{id}/catalogs`)
 
