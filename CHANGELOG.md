@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.0-rc.1] - 2026-05-20
+
+### Added
+- **Scoped Collection Update (`PUT`)**: Added `PUT /catalogs/{catalogId}/collections/{collectionId}` endpoint to update collection metadata within a scoped catalog context. This operation preserves existing hierarchy links (parent_ids) unless explicitly modified.
+- **DAG Preservation Guidance**: Added documentation note recommending that updates to collections be performed through scoped routes rather than core STAC routes to properly preserve the poly-hierarchy DAG structure.
+
 ## [v1.0.0-beta.4] - 2026-03-13
 
 ### Added
@@ -47,7 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Updated Conformance Class URIs to match the new versioning.
 
-[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.4...main
+[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.1...main
+[v1.0.0-rc.1]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.4...v1.0.0-rc.1
 [v1.0.0-beta.4]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [v1.0.0-beta.3]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [v1.0.0-beta.2]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.1...v1.0.0-beta.2
