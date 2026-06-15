@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: STAC API Multi-Tenant Catalogs Endpoint Extension
-  version: 1.0.0-beta.4
+  version: 1.0.0-rc.2
   description: |
     An extension that adds a dedicated `/catalogs` endpoint to support a 
     Multi-Tenant architecture. It allows a STAC API to act as a registry for 
@@ -10,6 +10,7 @@ info:
     
     **Conformance Classes:**
     * Core (Read-Only): `.../multi-tenant-catalogs`
+    * Search (Optional): `.../multi-tenant-catalogs/search`
     * Management (Optional): `.../multi-tenant-catalogs/transaction`
     
     Includes "Safety-First" transaction logic where deletions via this endpoint 
@@ -216,7 +217,96 @@ paths:
                 type: object
 
   # ----------------------------------------------------------------------
-  # 6. SCOPED COLLECTIONS MANAGEMENT
+  # 6. SCOPED SEARCH (Optional)
+  # ----------------------------------------------------------------------
+  /catalogs/{catalogId}/search:
+    parameters:
+      - $ref: '#/components/parameters/catalogId'
+    get:
+      tags:
+        - "Discovery (Core)"
+      summary: Search items in a catalog's descendant tree
+      description: |
+        Performs a STAC item search strictly bounded to the hierarchy of {catalogId}.
+        Evaluates items from all Collections directly linked to {catalogId} and 
+        all Collections linked to any descendant Sub-Catalog nested beneath {catalogId}.
+        
+        Accepts the same query parameters as the core STAC `/search` endpoint. 
+        The `collections` parameter is intersected with the catalog's allowed descendant collections.
+      operationId: getCatalogSearch
+      parameters:
+        - name: collections
+          in: query
+          description: Array of collection IDs to search. The API computes the intersection with the catalog's allowed descendant collections.
+          schema:
+            type: array
+            items:
+              type: string
+        - name: bbox
+          in: query
+          description: Bounding box for spatial filtering (minx,miny,maxx,maxy)
+          schema:
+            type: array
+            items:
+              type: number
+        - name: datetime
+          in: query
+          description: Datetime range for temporal filtering (RFC 3339 format or open-ended ranges)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of items to return
+          schema:
+            type: integer
+        - name: ids
+          in: query
+          description: Array of item IDs to search for
+          schema:
+            type: array
+            items:
+              type: string
+        - name: intersects
+          in: query
+          description: GeoJSON geometry for spatial filtering (alternative to bbox)
+          schema:
+            type: object
+      responses:
+        '200':
+          description: A GeoJSON FeatureCollection of matching items
+          content:
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+    post:
+      tags:
+        - "Discovery (Core)"
+      summary: Search items in a catalog's descendant tree
+      description: |
+        Performs a STAC item search strictly bounded to the hierarchy of {catalogId}.
+        Evaluates items from all Collections directly linked to {catalogId} and 
+        all Collections linked to any descendant Sub-Catalog nested beneath {catalogId}.
+        
+        Accepts the same request body as the core STAC `/search` endpoint. 
+        The `collections` parameter is intersected with the catalog's allowed descendant collections.
+      operationId: postCatalogSearch
+      requestBody:
+        description: Search query parameters (STAC search body)
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchBody'
+      responses:
+        '200':
+          description: A GeoJSON FeatureCollection of matching items
+          content:
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+
+  # ----------------------------------------------------------------------
+  # 7. SCOPED COLLECTIONS MANAGEMENT
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/collections:
     parameters:
@@ -258,7 +348,7 @@ paths:
           description: Existing Collection successfully linked
 
   # ----------------------------------------------------------------------
-  # 7. SCOPED SINGLE COLLECTION
+  # 8. SCOPED SINGLE COLLECTION
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/collections/{collectionId}:
     parameters:
@@ -324,7 +414,7 @@ paths:
           description: Collection unlinked successfully
 
   # ----------------------------------------------------------------------
-  # 8. SCOPED ITEMS (Search)
+  # 9. SCOPED ITEMS (Search)
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/collections/{collectionId}/items:
     parameters:
@@ -344,7 +434,7 @@ paths:
                 $ref: '#/components/schemas/FeatureCollection'
 
   # ----------------------------------------------------------------------
-  # 9. SCOPED SINGLE ITEM
+  # 10. SCOPED SINGLE ITEM
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/collections/{collectionId}/items/{itemId}:
     parameters:
@@ -369,7 +459,7 @@ paths:
                 $ref: '#/components/schemas/Item'
 
   # ----------------------------------------------------------------------
-  # 10. SUB-CATALOG QUERYABLES (Optional)
+  # 11. SUB-CATALOG QUERYABLES (Optional)
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/queryables:
     parameters:
@@ -388,7 +478,7 @@ paths:
                 $ref: '#/components/schemas/Queryables'
 
   # ----------------------------------------------------------------------
-  # 11. SCOPED COLLECTION QUERYABLES
+  # 12. SCOPED COLLECTION QUERYABLES
   # ----------------------------------------------------------------------
   /catalogs/{catalogId}/collections/{collectionId}/queryables:
     parameters:

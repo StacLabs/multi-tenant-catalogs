@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.0-rc.2] - 2026-06-15
+
+### Added
+- **Scoped Search Endpoints:** Introduced `GET /catalogs/{catalogId}/search` and `POST /catalogs/{catalogId}/search` to allow STAC item searches strictly bounded to a catalog's descendant tree. Included a new optional `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` conformance class for APIs to explicitly advertise this capability.
+
+### Changed
+- **Release Candidate 2:** Bumped the extension version and updated all associated conformance class URIs from `v1.0.0-beta.4` to `v1.0.0-rc.2` to reflect the progression toward a stable release.
+
 ## [v1.0.0-rc.1] - 2026-05-20
 
 ### Added
