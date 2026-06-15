@@ -4,6 +4,7 @@
 - **Conformance Classes:**
   - `https://api.stacspec.org/v1.0.0/core` (required)
   - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0/item-search` (required IF implementing scoped search)
   - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/children` (recommended)

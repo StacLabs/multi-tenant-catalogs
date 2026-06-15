@@ -11,6 +11,7 @@ info:
     **Conformance Classes:**
     * Core (Read-Only): `.../multi-tenant-catalogs`
     * Search (Optional): `.../multi-tenant-catalogs/search`
+    * Item Search Base: `https://api.stacspec.org/v1.0.0/item-search` (Required if Search is implemented)
     * Management (Optional): `.../multi-tenant-catalogs/transaction`
     
     Includes "Safety-First" transaction logic where deletions via this endpoint 
