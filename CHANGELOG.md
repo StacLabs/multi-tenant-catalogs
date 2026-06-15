@@ -61,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Updated Conformance Class URIs to match the new versioning.
 
-[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.1...main
+[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.2...main
+[v1.0.0-rc.2]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [v1.0.0-rc.1]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.4...v1.0.0-rc.1
 [v1.0.0-beta.4]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [v1.0.0-beta.3]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.2...v1.0.0-beta.3
