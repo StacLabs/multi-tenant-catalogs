@@ -244,9 +244,11 @@ paths:
               type: string
         - name: bbox
           in: query
-          description: Bounding box for spatial filtering (minx,miny,maxx,maxy)
+          description: Bounding box for spatial filtering (minx,miny,maxx,maxy or minx,miny,minz,maxx,maxy,maxz)
           schema:
             type: array
+            minItems: 4
+            maxItems: 6
             items:
               type: number
         - name: datetime
@@ -269,8 +271,10 @@ paths:
         - name: intersects
           in: query
           description: GeoJSON geometry for spatial filtering (alternative to bbox)
-          schema:
-            type: object
+          content:
+            application/geo+json:
+              schema:
+                type: object
       responses:
         '200':
           description: A GeoJSON FeatureCollection of matching items
@@ -594,3 +598,6 @@ components:
     Queryables:
       type: object
       description: A JSON Schema object for queryables
+    SearchBody:
+      type: object
+      description: STAC Item Search request body (same shape as the core /search endpoint). Supports spatial (bbox, intersects), temporal (datetime), and collection filtering.
