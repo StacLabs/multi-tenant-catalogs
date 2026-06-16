@@ -3,8 +3,10 @@
 - **Title:** Multi-Tenant Catalogs Endpoint
 - **Conformance Classes:**
   - `https://api.stacspec.org/v1.0.0/core` (required)
-  - `https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs` (required)
-  - `https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction` (optional)
+  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0/item-search` (required IF implementing scoped search)
+  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` (optional)
+  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/children` (recommended)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
@@ -12,7 +14,8 @@
   - [STAC API - Core](https://github.com/radiantearth/stac-api-spec/blob/main/core)
   - [STAC API - Collections](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features)
   - [STAC API - Children](https://github.com/stac-api-extensions/children)
-  - [STAC API - Transaction](https://github.com/radiantearth/stac-api-spAec/tree/main/ogcapi-features/extensions/transaction) (Reference pattern)
+  - [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/main/item-search) (Required if implementing scoped search)
+  - [STAC API - Transaction](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction) (Reference pattern)
 - **Owner**: @jonhealy1
 
 ## Introduction
@@ -51,6 +54,8 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `GET` | `/catalogs/{catalogId}` | **Sub-Catalog Root.** Acts as the Landing Page for the provider. |
 | `GET` | `/catalogs/{catalogId}/conformance` | Conformance classes specific to this sub-catalog. |
 | `GET` | `/catalogs/{catalogId}/queryables` | Filter Extension. Lists fields available for filtering in this sub-catalog. |
+| `GET` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
+| `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children.** Lists all child resources (Catalogs and Collections). Supports filtering via `?type=Catalog` or `?type=Collection`. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
 | `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
@@ -72,6 +77,20 @@ These endpoints allow for the dynamic creation and deletion of the federation st
 | `POST` | `/catalogs/{catalogId}/collections` | **Link or Create Collection.** Links an existing collection OR creates a new one. |
 | `PUT`  | `/catalogs/{catalogId}/collections/{collectionId}` | **Update Collection.** Updates metadata (Title, Description). **Safety: Preserves existing hierarchy links.** |
 | `DELETE` | `/catalogs/{catalogId}/collections/{collectionId}` | **Unlink Collection.** Removes the link from the parent catalog. **Safety: Never deletes the collection data.** |
+
+## Scoped Search (Recursive Traversal)
+
+If an implementation supports the `Item Search` conformance class, it MAY expose the scoped search endpoints (`GET /catalogs/{catalogId}/search` and `POST /catalogs/{catalogId}/search`). 
+
+If an implementation exposes these endpoints, it **MUST** advertise the `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` conformance class.
+
+These endpoints MUST accept the exact same query parameters and JSON payloads as the core STAC `/search` endpoint, but their evaluation scope is strictly bound to the hierarchy of `{catalogId}`.
+
+To properly support the recursive nature of the Multi-Tenant Catalogs extension, the scoped search **MUST** evaluate items from:
+1. All Collections directly linked as children of `{catalogId}`.
+2. All Collections linked to **any descendant Sub-Catalog** nested beneath `{catalogId}`.
+
+**Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error.
 
 ## Poly-Hierarchy (Multi-Parenting)
 
@@ -182,6 +201,7 @@ This resource acts as the Landing Page for the provider or a nested sub-folder.
 * `rel="related"`: If the catalog is part of a poly-hierarchy (has multiple parents), the API MAY include this link for all *other* parent catalogs to expose the broader graph.
 * `rel="root"`: MUST point to the Global Root (`/`) to maintain a single navigation tree.
 * `rel="child"`: MUST point to any immediate Sub-Catalogs (`/catalogs/{subId}`) AND any linked Collections (`/catalogs/{catalogId}/collections/{collectionId}`).
+* `rel="search"`: MAY point to `/catalogs/{catalogId}/search` if the API implements the scoped search functionality.
 
 ### 3. The Global Collection (`/collections/{collectionId}`)
 This resource represents a Collection accessible via the standard STAC core endpoint (flat, global discovery).
@@ -232,7 +252,8 @@ This endpoint returns a JSON object structurally similar to a standard `/collect
         { "rel": "self", "href": "https://api.example.com/catalogs/catalog3" },
         { "rel": "root", "href": "https://api.example.com/" },
         { "rel": "parent", "href": "https://api.example.com/catalogs/catalog2" },
-        { "rel": "data", "href": "https://api.example.com/catalogs/catalog3/collections" }
+        { "rel": "data", "href": "https://api.example.com/catalogs/catalog3/collections" },
+        { "rel": "search", "href": "https://api.example.com/catalogs/catalog3/search", "type": "application/geo+json" }
       ]
     },
     {
@@ -244,7 +265,8 @@ This endpoint returns a JSON object structurally similar to a standard `/collect
       "links": [
         { "rel": "self", "href": "https://api.example.com/catalogs/esa-sentinel" },
         { "rel": "root", "href": "https://api.example.com/" },
-        { "rel": "data", "href": "https://api.example.com/catalogs/esa-sentinel/collections" }
+        { "rel": "data", "href": "https://api.example.com/catalogs/esa-sentinel/collections" },
+        { "rel": "search", "href": "https://api.example.com/catalogs/esa-sentinel/search", "type": "application/geo+json" }
       ]
     }
   ],
@@ -274,8 +296,9 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
   "description": "A standard STAC API that also supports multi-tenant catalogs.",
   "conformsTo": [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs",
-    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction"
+    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search",
+    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction"
   ],
   "links": [
     {
