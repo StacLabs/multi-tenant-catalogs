@@ -198,8 +198,7 @@ paths:
         Implements STAC API - Children v1.0.0 for this sub-catalog. Returns all
         Catalogs and Collections referenced by this catalog's `rel="child"` links.
         The response `links` array MUST include `root`, `parent`, and `self` links.
-        Each entity in `children` MUST be a valid Catalog or Collection (reduced
-        entities are allowed, but all required fields MUST be present) and MUST
+        Each entity in `children` MUST be a valid Catalog or Collection and MUST
         include a `self` link.
       operationId: getCatalogChildren
       responses:

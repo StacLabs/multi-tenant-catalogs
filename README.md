@@ -333,7 +333,7 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
 
 ### 3. The Children Endpoint (GET /catalogs/{id}/children)
 
-This endpoint returns a list of both child Catalogs and child Collections, aligned with [STAC API - Children v1.0.0](https://github.com/stac-api-extensions/children). The response `links` array MUST include `root`, `parent`, and `self` links. Each entity in `children` MUST be a valid Catalog or Collection (reduced entities with a subset of fields are allowed, but all required fields MUST be present) and MUST include a `self` link.
+This endpoint returns a list of both child Catalogs and child Collections, aligned with [STAC API - Children v1.0.0](https://github.com/stac-api-extensions/children). The response `links` array MUST include `root`, `parent`, and `self` links. Each entity in `children` MUST be a valid Catalog or Collection and MUST include a `self` link.
 
 ```json
 {
