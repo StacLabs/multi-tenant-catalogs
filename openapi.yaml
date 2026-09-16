@@ -192,14 +192,16 @@ paths:
           enum: [Catalog, Collection]
     get:
       tags:
-        - "Discovery (Core)"
+        - "Discovery (Recommended)"
       summary: Get all children (Catalogs and Collections)
       description: |
-        Implements STAC API - Children v1.0.0 for this sub-catalog. Returns all
-        Catalogs and Collections referenced by this catalog's `rel="child"` links.
-        The response `links` array MUST include `root`, `parent`, and `self` links.
-        Each entity in `children` MUST be a valid Catalog or Collection and MUST
-        include a `self` link.
+        Implements STAC API - Children v1.0.0 for this sub-catalog. This endpoint
+        is RECOMMENDED and MUST only be exposed if the API advertises the
+        `https://api.stacspec.org/v1.0.0/children` conformance class.
+        Returns all Catalogs and Collections referenced by this catalog's
+        `rel="child"` links. The response `links` array MUST include `root`,
+        `parent`, and `self` links. Each entity in `children` MUST be a valid
+        Catalog or Collection and MUST include a `self` link.
       operationId: getCatalogChildren
       responses:
         '200':
