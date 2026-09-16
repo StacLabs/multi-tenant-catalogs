@@ -7,7 +7,8 @@
   - `https://api.stacspec.org/v1.0.0/item-search` (required IF implementing scoped search)
   - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` (optional)
   - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction` (optional)
-  - `https://api.stacspec.org/v1.0.0-rc.2/children` (recommended)
+  - `https://api.stacspec.org/v1.0.0/children` (recommended)
+  - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
 - **Dependencies:**
@@ -56,7 +57,7 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `GET` | `/catalogs/{catalogId}/queryables` | Filter Extension. Lists fields available for filtering in this sub-catalog. |
 | `GET` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
-| `GET` | `/catalogs/{catalogId}/children` | **Children.** Lists all child resources (Catalogs and Collections). Supports filtering via `?type=Catalog` or `?type=Collection`. |
+| `GET` | `/catalogs/{catalogId}/children` | **Children.** Lists all child resources (Catalogs and Collections). Filtering via `?type=Catalog` or `?type=Collection` is supported only if the API advertises the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
 | `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
@@ -201,6 +202,7 @@ This resource acts as the Landing Page for the provider or a nested sub-folder.
 * `rel="related"`: If the catalog is part of a poly-hierarchy (has multiple parents), the API MAY include this link for all *other* parent catalogs to expose the broader graph.
 * `rel="root"`: MUST point to the Global Root (`/`) to maintain a single navigation tree.
 * `rel="child"`: MUST point to any immediate Sub-Catalogs (`/catalogs/{subId}`) AND any linked Collections (`/catalogs/{catalogId}/collections/{collectionId}`).
+* `rel="children"`: MUST point to `/catalogs/{catalogId}/children` when the catalog contains `rel="child"` links (required by STAC API - Children v1.0.0).
 * `rel="search"`: MAY point to `/catalogs/{catalogId}/search` if the API implements the scoped search functionality.
 
 ### 3. The Global Collection (`/collections/{collectionId}`)
@@ -298,7 +300,9 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
     "https://api.stacspec.org/v1.0.0/core",
     "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search",
-    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction"
+    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction",
+    "https://api.stacspec.org/v1.0.0/children",
+    "https://api.stacspec.org/v1.0.0/children#type-filter"
   ],
   "links": [
     {
@@ -329,7 +333,7 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
 
 ### 3. The Children Endpoint (GET /catalogs/{id}/children)
 
-This endpoint returns a list of both child Catalogs and child Collections.
+This endpoint returns a list of both child Catalogs and child Collections, aligned with [STAC API - Children v1.0.0](https://github.com/stac-api-extensions/children). The response `links` array MUST include `root`, `parent`, and `self` links. Each entity in `children` MUST be a valid Catalog or Collection (reduced entities with a subset of fields are allowed, but all required fields MUST be present) and MUST include a `self` link.
 
 ```json
 {
@@ -337,17 +341,30 @@ This endpoint returns a list of both child Catalogs and child Collections.
     {
       "id": "sub-catalog-1",
       "type": "Catalog",
+      "stac_version": "1.0.0",
       "title": "A nested sub-catalog",
+      "description": "A nested sub-catalog.",
       "links": [
-        { "rel": "self", "href": "https://api.example.com/catalogs/sub-catalog-1" }
+        { "rel": "self", "href": "https://api.example.com/catalogs/sub-catalog-1" },
+        { "rel": "root", "href": "https://api.example.com/" },
+        { "rel": "parent", "href": "https://api.example.com/catalogs/c1" }
       ]
     },
     {
       "id": "collection-1",
       "type": "Collection",
+      "stac_version": "1.0.0",
       "title": "A child collection",
+      "description": "A child collection.",
+      "license": "proprietary",
+      "extent": {
+        "spatial": { "bbox": [[-180, -90, 180, 90]] },
+        "temporal": { "interval": [[null, null]] }
+      },
       "links": [
-        { "rel": "self", "href": "https://api.example.com/collections/collection-1" }
+        { "rel": "self", "href": "https://api.example.com/collections/collection-1" },
+        { "rel": "root", "href": "https://api.example.com/" },
+        { "rel": "parent", "href": "https://api.example.com/catalogs/c1" }
       ]
     }
   ],
@@ -355,6 +372,14 @@ This endpoint returns a list of both child Catalogs and child Collections.
     {
       "rel": "self",
       "href": "https://api.example.com/catalogs/c1/children"
+    },
+    {
+      "rel": "root",
+      "href": "https://api.example.com/"
+    },
+    {
+      "rel": "parent",
+      "href": "https://api.example.com/catalogs/c1"
     },
     {
       "rel": "next",
