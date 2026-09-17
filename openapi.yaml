@@ -13,6 +13,8 @@ info:
     * Search (Optional): `.../multi-tenant-catalogs/search`
     * Item Search Base: `https://api.stacspec.org/v1.0.0/item-search` (Required if Search is implemented)
     * Management (Optional): `.../multi-tenant-catalogs/transaction`
+    * Children (Recommended): `https://api.stacspec.org/v1.0.0/children`
+    * Children Type Filter (Optional): `https://api.stacspec.org/v1.0.0/children#type-filter`
     
     Includes "Safety-First" transaction logic where deletions via this endpoint 
     are strictly organizational (unlinking) and never destructive to data.
@@ -181,14 +183,25 @@ paths:
       - $ref: '#/components/parameters/catalogId'
       - name: type
         in: query
-        description: Filter children by type (Catalog or Collection)
+        description: |
+          Filters the response to only include Catalogs or Collections.
+          Only available if the API advertises the
+          `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class.
         schema:
           type: string
           enum: [Catalog, Collection]
     get:
       tags:
-        - "Discovery (Core)"
+        - "Discovery (Recommended)"
       summary: Get all children (Catalogs and Collections)
+      description: |
+        Implements STAC API - Children v1.0.0 for this sub-catalog. This endpoint
+        is RECOMMENDED and MUST only be exposed if the API advertises the
+        `https://api.stacspec.org/v1.0.0/children` conformance class.
+        Returns all Catalogs and Collections referenced by this catalog's
+        `rel="child"` links. The response `links` array MUST include `root`,
+        `parent`, and `self` links. Each entity in `children` MUST be a valid
+        Catalog or Collection and MUST include a `self` link.
       operationId: getCatalogChildren
       responses:
         '200':
@@ -551,8 +564,12 @@ components:
         children:
           type: array
           items:
-            # Polymorphic schema (can be Catalog or Collection)
-            type: object 
+            # Polymorphic schema (Catalog or Collection, discriminated by `type`)
+            oneOf:
+              - $ref: '#/components/schemas/Catalog'
+              - $ref: '#/components/schemas/Collection'
+            discriminator:
+              propertyName: type
         links:
           type: array
           items:
@@ -562,6 +579,12 @@ components:
     Catalog:
       type: object
       description: A standard STAC Catalog object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [Catalog]
     LandingPage:
       type: object
       description: A standard STAC Landing Page object
@@ -571,6 +594,12 @@ components:
     Collection:
       type: object
       description: A standard STAC Collection object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [Collection]
     FeatureCollection:
       type: object
       description: A GeoJSON FeatureCollection

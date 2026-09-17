@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Children Extension v1.0.0:** Upgraded the STAC API - Children dependency from `v1.0.0-rc.2` to `v1.0.0`. The recommended conformance class URI is now `https://api.stacspec.org/v1.0.0/children`, and the `?type` query parameter on `GET /catalogs/{catalogId}/children` is now governed by the optional `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. Aligned with v1.0.0 requirements: `**/children` responses MUST include `root`, `parent`, and `self` links; each entity in `children` MUST be a valid Catalog or Collection and include a `self` link; and Catalogs containing `child` links MUST expose a `rel="children"` link when the implementation advertises the Children conformance class.
+
 ## [v1.0.0-rc.2] - 2026-06-15
 
 ### Added
