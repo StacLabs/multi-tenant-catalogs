@@ -365,7 +365,7 @@ This endpoint is **RECOMMENDED** and MUST only be exposed if the API advertises 
         "temporal": { "interval": [[null, null]] }
       },
       "links": [
-        { "rel": "self", "href": "https://api.example.com/collections/collection-1" },
+        { "rel": "self", "href": "https://api.example.com/catalogs/c1/collections/collection-1" },
         { "rel": "root", "href": "https://api.example.com/" },
         { "rel": "parent", "href": "https://api.example.com/catalogs/c1" }
       ]
