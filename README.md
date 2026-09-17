@@ -3,10 +3,10 @@
 - **Title:** Multi-Tenant Catalogs Endpoint
 - **Conformance Classes:**
   - `https://api.stacspec.org/v1.0.0/core` (required)
-  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs` (required)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs` (required)
   - `https://api.stacspec.org/v1.0.0/item-search` (required IF implementing scoped search)
-  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` (optional)
-  - `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction` (optional)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search` (optional)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0/children` (recommended)
   - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
 - **Scope:** STAC API - Core
@@ -83,7 +83,7 @@ These endpoints allow for the dynamic creation and deletion of the federation st
 
 If an implementation supports the `Item Search` conformance class, it MAY expose the scoped search endpoints (`GET /catalogs/{catalogId}/search` and `POST /catalogs/{catalogId}/search`). 
 
-If an implementation exposes these endpoints, it **MUST** advertise the `https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search` conformance class.
+If an implementation exposes these endpoints, it **MUST** advertise the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search` conformance class.
 
 These endpoints MUST accept the exact same query parameters and JSON payloads as the core STAC `/search` endpoint, but their evaluation scope is strictly bound to the hierarchy of `{catalogId}`.
 
@@ -300,9 +300,9 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
   "description": "A standard STAC API that also supports multi-tenant catalogs.",
   "conformsTo": [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs",
-    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/search",
-    "https://api.stacspec.org/v1.0.0-rc.2/multi-tenant-catalogs/transaction",
+    "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search",
+    "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction",
     "https://api.stacspec.org/v1.0.0/children",
     "https://api.stacspec.org/v1.0.0/children#type-filter"
   ],
@@ -442,5 +442,5 @@ This extension reserves the path `/catalogs/{catalogId}/queryables` to support t
 
 However, implementation of this endpoint is **OPTIONAL**.
 
-* A sub-catalog **MUST** only expose this endpoint if it advertises conformance to the Filter Extension URI (e.g., `https://api.stacspec.org/v1.0.0-rc.2/filter`) in the Sub-Catalog Landing Page (`/catalogs/{catalogId}`).
+* A sub-catalog **MUST** only expose this endpoint if it advertises conformance to the Filter Extension URI (e.g., `https://api.stacspec.org/v1.0.0/filter`) in the Sub-Catalog Landing Page (`/catalogs/{catalogId}`).
 * If implemented, the queryables response must be scoped specifically to that sub-catalog.
