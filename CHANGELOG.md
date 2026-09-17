@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.0] - 2026-09-17
+
 ### Changed
+- **Stable Release:** Promoted the extension from release candidate to stable and updated all associated conformance class URIs from `v1.0.0-rc.2` to `v1.0.0` (`multi-tenant-catalogs`, `multi-tenant-catalogs/search`, `multi-tenant-catalogs/transaction`).
 - **Children Extension v1.0.0:** Upgraded the STAC API - Children dependency from `v1.0.0-rc.2` to `v1.0.0`. The recommended conformance class URI is now `https://api.stacspec.org/v1.0.0/children`, and the `?type` query parameter on `GET /catalogs/{catalogId}/children` is now governed by the optional `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. Aligned with v1.0.0 requirements: `**/children` responses MUST include `root`, `parent`, and `self` links; each entity in `children` MUST be a valid Catalog or Collection and include a `self` link; and Catalogs containing `child` links MUST expose a `rel="children"` link when the implementation advertises the Children conformance class.
 
 ## [v1.0.0-rc.2] - 2026-06-15
@@ -64,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Updated Conformance Class URIs to match the new versioning.
 
-[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.2...main
+[Unreleased]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0...main
+[v1.0.0]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.2...v1.0.0
 [v1.0.0-rc.2]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [v1.0.0-rc.1]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.4...v1.0.0-rc.1
 [v1.0.0-beta.4]: https://github.com/Healy-Hyperspatial/multi-tenant-catalogs/compare/v1.0.0-beta.3...v1.0.0-beta.4
