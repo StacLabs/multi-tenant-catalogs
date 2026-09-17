@@ -564,10 +564,12 @@ components:
         children:
           type: array
           items:
-            # Polymorphic schema (can be Catalog or Collection)
-            anyOf:
+            # Polymorphic schema (Catalog or Collection, discriminated by `type`)
+            oneOf:
               - $ref: '#/components/schemas/Catalog'
               - $ref: '#/components/schemas/Collection'
+            discriminator:
+              propertyName: type
         links:
           type: array
           items:
@@ -577,6 +579,12 @@ components:
     Catalog:
       type: object
       description: A standard STAC Catalog object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [Catalog]
     LandingPage:
       type: object
       description: A standard STAC Landing Page object
@@ -586,6 +594,12 @@ components:
     Collection:
       type: object
       description: A standard STAC Collection object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [Collection]
     FeatureCollection:
       type: object
       description: A GeoJSON FeatureCollection
