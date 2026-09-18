@@ -91,7 +91,7 @@ To properly support the recursive nature of the Multi-Tenant Catalogs extension,
 1. All Collections directly linked as children of `{catalogId}`.
 2. All Collections linked to **any descendant Sub-Catalog** nested beneath `{catalogId}`.
 
-**Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error.
+**Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error (`403 Forbidden`).
 
 ## Poly-Hierarchy (Multi-Parenting)
 

@@ -158,6 +158,10 @@ paths:
           description: Sub-Catalog created and linked
         '200':
           description: Existing Sub-Catalog successfully linked
+        '404':
+          description: |
+            The body was an id-only (link) payload and no resource with that `id`
+            exists (see "Transaction Behavior" in the README).
 
   /catalogs/{catalogId}/catalogs/{subCatalogId}:
     parameters:
@@ -296,6 +300,11 @@ paths:
             application/geo+json:
               schema:
                 $ref: '#/components/schemas/FeatureCollection'
+        '403':
+          description: |
+            One or more requested `collections` are outside the catalog's descendant
+            tree and the implementation rejects out-of-scope requests instead of
+            ignoring them (see "Scoped Search" in the README).
     post:
       tags:
         - "Discovery (Core)"
@@ -322,6 +331,11 @@ paths:
             application/geo+json:
               schema:
                 $ref: '#/components/schemas/FeatureCollection'
+        '403':
+          description: |
+            One or more requested `collections` are outside the catalog's descendant
+            tree and the implementation rejects out-of-scope requests instead of
+            ignoring them (see "Scoped Search" in the README).
 
   # ----------------------------------------------------------------------
   # 7. SCOPED COLLECTIONS MANAGEMENT
@@ -364,6 +378,10 @@ paths:
           description: Collection created and linked
         '200':
           description: Existing Collection successfully linked
+        '404':
+          description: |
+            The body was an id-only (link) payload and no resource with that `id`
+            exists (see "Transaction Behavior" in the README).
 
   # ----------------------------------------------------------------------
   # 8. SCOPED SINGLE COLLECTION

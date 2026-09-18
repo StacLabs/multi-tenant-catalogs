@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Scoped Search Responses:** Documented the `403 Forbidden` response on `GET` and `POST /catalogs/{catalogId}/search` in `openapi.yaml` for implementations that reject, rather than ignore, requested `collections` outside the catalog's descendant tree, as the README already permits. Named the status code in the README.
+- **Link-by-Reference Responses:** Documented the `404 Not Found` response on `POST /catalogs/{catalogId}/catalogs` and `POST /catalogs/{catalogId}/collections` in `openapi.yaml` for an id-only payload whose `id` does not exist, which the README already requires.
+
 ## [v1.0.0] - 2026-09-17
 
 ### Changed
