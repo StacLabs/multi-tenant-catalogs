@@ -304,7 +304,7 @@ paths:
           description: |
             One or more requested `collections` are outside the catalog's descendant
             tree and the implementation rejects out-of-scope requests instead of
-            ignoring them (see "Scoped Search" in the README).
+            ignoring them (see "Scoped Search (Recursive Traversal)" in the README).
     post:
       tags:
         - "Discovery (Core)"
