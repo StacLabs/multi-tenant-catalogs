@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Core Collection Updates:** Reworded the note in Scoped Collection Update (Section 2.1). Implementations SHOULD now keep a collection's `parent_ids` when it is updated through the core `PUT /collections/{collectionId}` route. The previous note told clients to update collections only through the scoped route because the core route could lose the hierarchy; clients still SHOULD do so where an implementation doesn't preserve `parent_ids`.
+
 ### Fixed
 - **Scoped Search Responses:** Documented the `403 Forbidden` response on `GET` and `POST /catalogs/{catalogId}/search` in `openapi.yaml` for implementations that reject, rather than ignore, requested `collections` outside the catalog's descendant tree, as the README already permits. Named the status code in the README.
 - **Link-by-Reference Responses:** Documented the `404 Not Found` response on `POST /catalogs/{catalogId}/catalogs` and `POST /catalogs/{catalogId}/collections` in `openapi.yaml` for an id-only payload whose `id` does not exist, which the README already requires.
