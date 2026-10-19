@@ -9,13 +9,14 @@
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0/children` (recommended)
   - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
-  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` (optional; required if implementing the Collection Search parameters on the scoped collections listing)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` (optional; binds advertised STAC API Collection Search conformance classes to the scoped collections listing)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
 - **Dependencies:**
   - [STAC API - Core](https://github.com/radiantearth/stac-api-spec/blob/main/core)
   - [STAC API - Collections](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features)
   - [STAC API - Children](https://github.com/stac-api-extensions/children)
+  - [STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search) (Optional; defines the parameter semantics bound by `#collection-search`)
   - [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/main/item-search) (Required if implementing scoped search)
   - [STAC API - Transaction](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction) (Reference pattern)
 - **Owner**: @jonhealy1
@@ -60,7 +61,7 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
-| `GET` | `/catalogs/{catalogId}/collections` | **Scoped Collections List.** Lists collections belonging to this sub-catalog. May accept the STAC Collection Search parameters if the API advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — see [Scoped Collection Listing](#scoped-collection-listing). |
+| `GET` | `/catalogs/{catalogId}/collections` | **Scoped Collections List.** Lists the collections directly linked to this sub-catalog. The STAC Collection Search parameters apply if the API advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — see [Scoped Collection Listing](#scoped-collection-listing). |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
@@ -68,35 +69,47 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 #### Scoped Collection Listing
 
 `GET /catalogs/{catalogId}/collections` is the catalog-scoped counterpart of
-the STAC `/collections` listing. When the API advertises the
-`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
-conformance class, the STAC API Collection Search parameters apply to this
-endpoint:
+the STAC `/collections` listing. It returns the collections **directly
+linked** to `{catalogId}` — the same set exposed through the catalog's
+`rel="child"` links and the `/catalogs/{catalogId}/children` endpoint.
+Collections reachable only through descendant sub-catalogs are discoverable
+via the scoped [search endpoints](#scoped-search-recursive-traversal) or via
+the descendant catalogs' own scoped listings.
 
-| Parameter | Semantics |
+Rather than redefining query parameters, this extension reuses the
+[STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search)
+extension. The
+`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+conformance class acts as a **binding marker**: when advertised, the
+Collection Search conformance classes the API advertises also apply to this
+scoped endpoint:
+
+| Upstream conformance class | Parameters |
 | :--- | :--- |
-| `fields` | Include/exclude field projection on the returned collections (e.g. `+id`, `-extent`). |
-| `sortby` | Sort directives in `[+|-]field` form (repeatable). |
-| `q` | Free-text terms matched against collection `id`, `title`, `description` and `keywords`. |
-| `filter` | A CQL2 predicate (`filter-lang` selects `cql2-json` or `cql2-text`; `filter-crs` declares the CRS of spatial operands). |
-| `limit`, `token` | Pagination. |
+| `https://api.stacspec.org/v1.0.0/collection-search` | `bbox`, `datetime`, `limit` |
+| `https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text` (or `#advanced-free-text`) | `q` |
+| `https://api.stacspec.org/v1.0.0/collection-search#filter` | `filter`, `filter-lang`, `filter-crs` |
+| `https://api.stacspec.org/v1.1.0/collection-search#sort` | `sortby` |
+| `https://api.stacspec.org/v1.0.0/collection-search#fields` | `fields` |
 
-Support for these parameters is **OPTIONAL** but is governed by the
-`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
-conformance class:
+* An implementation MUST only accept Collection Search parameters on this
+  endpoint if it advertises the marker class, and each parameter group
+  applies only when the corresponding upstream conformance class is also
+  advertised.
+* Parameter syntax, defaults, and matching semantics are exactly as defined
+  by the upstream extension, with one addition: all constraints are ANDed
+  onto the catalog scope. A `bbox`, `datetime`, `q`, or `filter` constraint
+  narrows the set of collections directly linked to `{catalogId}` and MUST
+  NOT cause collections outside that scope to be exposed.
+* Pagination follows standard STAC conventions (`first`, `prev`, `next`,
+  `last` links); `limit` constrains the page size.
+* If `collection-search#filter` is bound, the response MUST link to a
+  Collection Search queryables endpoint. The scoped path SHOULD NOT conflict
+  with `/catalogs/{catalogId}/queryables`; this extension proposes
+  `/catalogs/{catalogId}/collection-queryables`.
 
-* An implementation MUST only accept these parameters if it advertises that
-  conformance class.
-* When advertised, the implementation MUST accept all of them and MUST apply
-  them strictly within the catalog scope: filtering, sorting and free-text
-  matching act only on collections belonging to `{catalogId}` (and its
-  descendants, where surfaced) and MUST NOT expose resources outside that
-  scope. A `filter` predicate is ANDed onto the catalog constraint rather
-  than replacing it.
-
-Whether these parameters are supported does not depend on a flat
-`/collections` listing or any other extension being enabled; the capability
-is a property of the catalogs extension itself.
+Whether the API also exposes a flat `/collections` listing is irrelevant;
+the capability is a property of the catalogs extension itself.
 
 ### Transactions (Management)
 These endpoints allow for the dynamic creation and deletion of the federation structure. 

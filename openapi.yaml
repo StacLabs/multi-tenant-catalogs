@@ -15,6 +15,7 @@ info:
     * Management (Optional): `.../multi-tenant-catalogs/transaction`
     * Children (Recommended): `https://api.stacspec.org/v1.0.0/children`
     * Children Type Filter (Optional): `https://api.stacspec.org/v1.0.0/children#type-filter`
+    * Collection Search Binding (Optional): `.../multi-tenant-catalogs#collection-search`
     
     Includes "Safety-First" transaction logic where deletions via this endpoint 
     are strictly organizational (unlinking) and never destructive to data.
@@ -348,57 +349,93 @@ paths:
         - "Discovery (Core)"
       summary: List collections within a specific sub-catalog
       description: |
-        The catalog-scoped counterpart of the STAC `/collections` listing. The
-        STAC API Collection Search parameters apply only when the API advertises
-        the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
-        conformance class, and then act strictly on collections scoped to
-        `{catalogId}` (see "Scoped Collection Listing" in the README).
+        The catalog-scoped counterpart of the STAC `/collections` listing,
+        returning the collections directly linked to `{catalogId}`.
+        STAC API Collection Search parameters apply only when the API
+        advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+        conformance class, and each parameter group then applies only when the
+        corresponding upstream `collection-search` conformance class is also
+        advertised. All constraints are ANDed onto the catalog scope and MUST
+        NOT expose collections outside `{catalogId}` (see "Scoped Collection
+        Listing" in the README).
       operationId: getCatalogCollections
       parameters:
-        - name: limit
+        - name: bbox
           in: query
-          description: Maximum number of collections to return
+          description: |
+            Spatial filter (`collection-search`): intersects
+            `extent.spatial.bbox` (minx,miny,maxx,maxy, optionally with minz,maxz)
+          explode: false
           schema:
-            type: integer
-        - name: token
+            type: array
+            minItems: 4
+            maxItems: 6
+            items:
+              type: number
+        - name: datetime
           in: query
-          description: Pagination token
+          description: |
+            Temporal filter (`collection-search`): intersects
+            `extent.temporal.interval` (RFC 3339 instant or interval)
           schema:
             type: string
-        - name: fields
+        - name: limit
           in: query
-          description: Include/exclude field selectors (e.g. `+id`, `-extent`)
+          description: Page size limit (`collection-search`); paginate via `next` links
           schema:
-            type: array
-            items:
-              type: string
-        - name: sortby
+            type: integer
+            minimum: 1
+        - name: token
           in: query
-          description: Sort directives `[+|-]field` (repeatable)
+          description: Opaque pagination token carried by `next`/`prev` links
           schema:
-            type: array
-            items:
-              type: string
+            type: string
         - name: q
           in: query
-          description: Free-text terms matched against collection id, title, description and keywords
+          description: |
+            Free-text terms (`collection-search#free-text`): case-insensitive;
+            commas separate OR-ed terms
           schema:
             type: string
         - name: filter
           in: query
-          description: CQL2 filter predicate, ANDed onto the catalog scope
+          description: CQL2 predicate (`collection-search#filter`), ANDed onto the catalog scope
           schema:
             type: string
         - name: filter-lang
           in: query
-          description: CQL2 dialect for `filter` (`cql2-json` or `cql2-text`)
+          description: CQL2 dialect of `filter`
           schema:
             type: string
+            enum: [cql2-text, cql2-json]
+            default: cql2-text
         - name: filter-crs
           in: query
-          description: CRS of spatial operands used in `filter`
+          description: |
+            CRS of spatial operands in `filter` (default
+            `http://www.opengis.net/def/crs/OGC/1.3/CRS84`)
           schema:
             type: string
+        - name: sortby
+          in: query
+          description: |
+            Sort directives (`collection-search#sort`): single comma-separated
+            `[+|-]field` list, e.g. `sortby=+id,-created`
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: fields
+          in: query
+          description: |
+            Field selectors (`collection-search#fields`): single comma-separated
+            list; `-` prefix excludes, no prefix includes, e.g. `fields=id,-extent`
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: A STAC Collections object
