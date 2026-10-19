@@ -123,7 +123,7 @@ To properly support the recursive nature of the Multi-Tenant Catalogs extension,
 1. All Collections directly linked as children of `{catalogId}`.
 2. All Collections linked to **any descendant Sub-Catalog** nested beneath `{catalogId}`.
 
-**Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error.
+**Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error (`403 Forbidden`).
 
 ## Poly-Hierarchy (Multi-Parenting)
 
@@ -155,7 +155,7 @@ Implementations supporting the Transaction endpoints MUST adhere to the followin
 * **Safety:** This operation MUST NOT modify the structural links (`parent_ids`) of the collection unless explicitly handled, ensuring the collection remains in its current hierarchy.
 
 > [!NOTE]
-> To preserve the poly-hierarchy DAG structure, updates to collections SHOULD be performed through scoped routes (`/catalogs/{catalogId}/collections/{collectionId}`) rather than the core STAC route (`/collections/{collectionId}`). The core route is flat and does not maintain parent-child relationships, so updates through that route may not properly preserve the hierarchical context.
+> The core STAC route (`PUT /collections/{collectionId}`) has no catalog context. To preserve the poly-hierarchy DAG structure, implementations SHOULD keep a collection's existing `parent_ids` when it is updated through the core route, so that an update through either route leaves the collection in its current hierarchy. The scoped route remains useful where write access is authorized per catalog, because it confirms that the collection belongs to `{catalogId}`. Where an implementation does not preserve `parent_ids` on the core route, clients SHOULD update collections through the scoped route.
 
 ### 3. Sub-Catalog Creation (`POST /catalogs/{id}/catalogs`)
 

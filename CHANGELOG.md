@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Scoped Collection Listing Parameters and `multi-tenant-catalogs#collection-search` Conformance Class:** `GET /catalogs/{catalogId}/collections` may accept the STAC API Collection Search parameters `fields`, `sortby`, `q` and `filter`/`filter-lang`/`filter-crs` (plus `limit`/`token` pagination) when the API advertises the new optional `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — independent of whether a flat `/collections` listing or any other extension is enabled. Parameters are ANDed onto the catalog scope and MUST NOT expose resources outside `{catalogId}`. Documented in a new "Scoped Collection Listing" section and in `openapi.yaml`.
 
+### Changed
+- **Core Collection Updates:** Reworded the note in Scoped Collection Update (Section 2.1). Implementations SHOULD now keep a collection's `parent_ids` when it is updated through the core `PUT /collections/{collectionId}` route. The previous note told clients to update collections only through the scoped route because the core route could lose the hierarchy; clients still SHOULD do so where an implementation doesn't preserve `parent_ids`.
+
+### Fixed
+- **Scoped Search Responses:** Documented the `403 Forbidden` response on `GET` and `POST /catalogs/{catalogId}/search` in `openapi.yaml` for implementations that reject, rather than ignore, requested `collections` outside the catalog's descendant tree, as the README already permits. Named the status code in the README.
+- **Link-by-Reference Responses:** Documented the `404 Not Found` response on `POST /catalogs/{catalogId}/catalogs` and `POST /catalogs/{catalogId}/collections` in `openapi.yaml` for an id-only payload whose `id` does not exist, which the README already requires.
+
 ## [v1.0.0] - 2026-09-17
 
 ### Changed
