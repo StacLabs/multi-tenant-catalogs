@@ -333,7 +333,54 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: List collections within a specific sub-catalog
+      description: |
+        The catalog-scoped counterpart of the STAC `/collections` listing. The
+        STAC API Collection Search parameters apply only when the API advertises
+        the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+        conformance class, and then act strictly on collections scoped to
+        `{catalogId}` (see "Scoped Collection Listing" in the README).
       operationId: getCatalogCollections
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of collections to return
+          schema:
+            type: integer
+        - name: token
+          in: query
+          description: Pagination token
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Include/exclude field selectors (e.g. `+id`, `-extent`), comma-separated or repeated
+          schema:
+            type: string
+        - name: sortby
+          in: query
+          description: Sort directives `[+|-]field`, comma-separated or repeated
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Free-text terms matched against collection id, title, description and keywords
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: CQL2 filter predicate, ANDed onto the catalog scope
+          schema:
+            type: string
+        - name: filter-lang
+          in: query
+          description: CQL2 dialect for `filter` (`cql2-json` or `cql2-text`)
+          schema:
+            type: string
+        - name: filter-crs
+          in: query
+          description: CRS of spatial operands used in `filter`
+          schema:
+            type: string
       responses:
         '200':
           description: A STAC Collections object

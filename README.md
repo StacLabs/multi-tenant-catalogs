@@ -9,6 +9,7 @@
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0/children` (recommended)
   - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` (optional; required if implementing the Collection Search parameters on the scoped collections listing)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
 - **Dependencies:**
@@ -59,10 +60,41 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
-| `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
+| `GET` | `/catalogs/{catalogId}/collections` | **Scoped Collections List.** Lists collections belonging to this sub-catalog. May accept the STAC Collection Search parameters if the API advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — see [Scoped Collection Listing](#scoped-collection-listing). |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
+
+#### Scoped Collection Listing
+
+`GET /catalogs/{catalogId}/collections` is the catalog-scoped counterpart of
+the STAC `/collections` listing. Because it is a collection listing, the STAC
+API Collection Search parameters apply to it as part of the endpoint contract:
+
+| Parameter | Semantics |
+| :--- | :--- |
+| `fields` | Include/exclude field projection on the returned collections (e.g. `+id`, `-extent`). |
+| `sortby` | Sort directives in `[+|-]field` form (repeatable or comma-separated). |
+| `q` | Free-text terms matched against collection `id`, `title`, `description` and `keywords`. |
+| `filter` | A CQL2 predicate (`filter-lang` selects `cql2-json` or `cql2-text`; `filter-crs` declares the CRS of spatial operands). |
+| `limit`, `token` | Pagination. |
+
+Support for these parameters is **OPTIONAL** but is governed by the
+`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+conformance class:
+
+* An implementation MUST only accept these parameters if it advertises that
+  conformance class.
+* When advertised, the implementation MUST accept all of them and MUST apply
+  them strictly within the catalog scope: filtering, sorting and free-text
+  matching act only on collections belonging to `{catalogId}` (and its
+  descendants, where surfaced) and MUST NOT expose resources outside that
+  scope. A `filter` predicate is ANDed onto the catalog constraint rather
+  than replacing it.
+
+Whether these parameters are supported does not depend on a flat
+`/collections` listing or any other extension being enabled; the capability
+is a property of the catalogs extension itself.
 
 ### Transactions (Management)
 These endpoints allow for the dynamic creation and deletion of the federation structure. 

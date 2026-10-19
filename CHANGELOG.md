@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Scoped Collection Listing Parameters and `multi-tenant-catalogs#collection-search` Conformance Class:** `GET /catalogs/{catalogId}/collections` may accept the STAC API Collection Search parameters `fields`, `sortby`, `q` and `filter`/`filter-lang`/`filter-crs` (plus `limit`/`token` pagination) when the API advertises the new optional `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — independent of whether a flat `/collections` listing or any other extension is enabled. Parameters are ANDed onto the catalog scope and MUST NOT expose resources outside `{catalogId}`. Documented in a new "Scoped Collection Listing" section and in `openapi.yaml`.
+
 ## [v1.0.0] - 2026-09-17
 
 ### Changed
