@@ -367,14 +367,18 @@ paths:
             type: string
         - name: fields
           in: query
-          description: Include/exclude field selectors (e.g. `+id`, `-extent`), comma-separated or repeated
+          description: Include/exclude field selectors (e.g. `+id`, `-extent`)
           schema:
-            type: string
+            type: array
+            items:
+              type: string
         - name: sortby
           in: query
-          description: Sort directives `[+|-]field`, comma-separated or repeated
+          description: Sort directives `[+|-]field` (repeatable)
           schema:
-            type: string
+            type: array
+            items:
+              type: string
         - name: q
           in: query
           description: Free-text terms matched against collection id, title, description and keywords

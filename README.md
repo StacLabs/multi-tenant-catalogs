@@ -68,13 +68,15 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 #### Scoped Collection Listing
 
 `GET /catalogs/{catalogId}/collections` is the catalog-scoped counterpart of
-the STAC `/collections` listing. Because it is a collection listing, the STAC
-API Collection Search parameters apply to it as part of the endpoint contract:
+the STAC `/collections` listing. When the API advertises the
+`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+conformance class, the STAC API Collection Search parameters apply to this
+endpoint:
 
 | Parameter | Semantics |
 | :--- | :--- |
 | `fields` | Include/exclude field projection on the returned collections (e.g. `+id`, `-extent`). |
-| `sortby` | Sort directives in `[+|-]field` form (repeatable or comma-separated). |
+| `sortby` | Sort directives in `[+|-]field` form (repeatable). |
 | `q` | Free-text terms matched against collection `id`, `title`, `description` and `keywords`. |
 | `filter` | A CQL2 predicate (`filter-lang` selects `cql2-json` or `cql2-text`; `filter-crs` declares the CRS of spatial operands). |
 | `limit`, `token` | Pagination. |
