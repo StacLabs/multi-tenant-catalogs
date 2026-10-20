@@ -15,6 +15,7 @@ info:
     * Management (Optional): `.../multi-tenant-catalogs/transaction`
     * Children (Recommended): `https://api.stacspec.org/v1.0.0/children`
     * Children Type Filter (Optional): `https://api.stacspec.org/v1.0.0/children#type-filter`
+    * Collection Search Binding (Optional): `.../multi-tenant-catalogs#collection-search`
     
     Includes "Safety-First" transaction logic where deletions via this endpoint 
     are strictly organizational (unlinking) and never destructive to data.
@@ -347,7 +348,103 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: List collections within a specific sub-catalog
+      description: |
+        The catalog-scoped counterpart of the STAC `/collections` listing,
+        returning the collections directly linked to `{catalogId}`.
+        STAC API Collection Search parameters apply only when the API
+        advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+        conformance class, and each parameter group then applies only when the
+        corresponding upstream `collection-search` conformance class is also
+        advertised. All constraints are ANDed onto the catalog scope and MUST
+        NOT expose collections outside `{catalogId}` (see "Scoped Collection
+        Listing" in the README).
       operationId: getCatalogCollections
+      parameters:
+        - name: bbox
+          in: query
+          description: |
+            Spatial filter (`collection-search`): intersects
+            `extent.spatial.bbox` (minx,miny,maxx,maxy, optionally with minz,maxz)
+          style: form
+          explode: false
+          schema:
+            type: array
+            minItems: 4
+            maxItems: 6
+            items:
+              type: number
+          example: [-180, -90, 180, 90]
+        - name: datetime
+          in: query
+          description: |
+            Temporal filter (`collection-search`): intersects
+            `extent.temporal.interval` (RFC 3339 instant or interval)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Page size limit (`collection-search`); paginate via `next` links
+          schema:
+            type: integer
+            minimum: 1
+        - name: token
+          in: query
+          description: |
+            Opaque pagination token (implementation convention, not part of
+            upstream Collection Search; clients should follow `rel="next"`
+            links rather than constructing this parameter)
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: |
+            Free-text terms (`collection-search#free-text`): case-insensitive;
+            commas separate OR-ed terms
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: CQL2 predicate (`collection-search#filter`), ANDed onto the catalog scope
+          schema:
+            type: string
+        - name: filter-lang
+          in: query
+          description: CQL2 dialect of `filter`
+          schema:
+            type: string
+            enum: [cql2-text, cql2-json]
+            default: cql2-text
+        - name: filter-crs
+          in: query
+          description: |
+            CRS of spatial operands in `filter` (default
+            `http://www.opengis.net/def/crs/OGC/1.3/CRS84`)
+          schema:
+            type: string
+        - name: sortby
+          in: query
+          description: |
+            Sort directives (`collection-search#sort`): single comma-separated
+            `[+|-]field` list, e.g. `sortby=+id,-created`
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+          example: ["+id", "-created"]
+        - name: fields
+          in: query
+          description: |
+            Field selectors (`collection-search#fields`): single comma-separated
+            list; `-` prefix excludes, no prefix includes, e.g. `fields=id,-extent`
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+          example: ["id", "-extent"]
       responses:
         '200':
           description: A STAC Collections object
@@ -533,6 +630,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/Queryables'
 
+  # ----------------------------------------------------------------------
+  # 13. SCOPED COLLECTION SEARCH QUERYABLES / SORTABLES (Optional)
+  # ----------------------------------------------------------------------
+  /catalogs/{catalogId}/collection-queryables:
+    parameters:
+      - $ref: '#/components/parameters/catalogId'
+    get:
+      tags:
+        - "Discovery (Core)"
+      summary: Get queryable fields for collections within this sub-catalog
+      description: |
+        Returns the JSON Schema of collection metadata attributes available
+        for CQL2 filtering on `GET /catalogs/{catalogId}/collections`.
+        Expose only when `collection-search#filter` is bound via the
+        `.../multi-tenant-catalogs#collection-search` conformance class; the
+        scoped listing response links here with
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"`.
+      operationId: getCatalogCollectionQueryablesSchema
+      responses:
+        '200':
+          description: A JSON Schema of collection queryable fields
+          content:
+            application/schema+json:
+              schema:
+                $ref: '#/components/schemas/Queryables'
+
+  /catalogs/{catalogId}/collection-sortables:
+    parameters:
+      - $ref: '#/components/parameters/catalogId'
+    get:
+      tags:
+        - "Discovery (Core)"
+      summary: Get sortable fields for collections within this sub-catalog
+      description: |
+        Returns the JSON Schema of collection metadata attributes available
+        for `sortby` on `GET /catalogs/{catalogId}/collections`.
+        Expose only when `collection-search#sortables` is bound via the
+        `.../multi-tenant-catalogs#collection-search` conformance class; the
+        scoped listing response links here with
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"`.
+      operationId: getCatalogCollectionSortablesSchema
+      responses:
+        '200':
+          description: A JSON Schema of collection sortable fields
+          content:
+            application/schema+json:
+              schema:
+                $ref: '#/components/schemas/Sortables'
+
 components:
   parameters:
     catalogId:
@@ -646,6 +792,13 @@ components:
     Queryables:
       type: object
       description: A JSON Schema object for queryables
+    Sortables:
+      type: object
+      description: |
+        A JSON Schema object defining sortable resource properties, per
+        OGC API - Features - Part 5: no object/array-typed or spatial
+        properties; `additionalProperties: false` means undeclared
+        `sortby` fields return 400
     SearchBody:
       type: object
       description: STAC Item Search request body (same shape as the core /search endpoint). Supports spatial (bbox, intersects), temporal (datetime), and collection filtering.
