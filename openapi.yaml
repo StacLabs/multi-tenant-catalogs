@@ -365,6 +365,7 @@ paths:
           description: |
             Spatial filter (`collection-search`): intersects
             `extent.spatial.bbox` (minx,miny,maxx,maxy, optionally with minz,maxz)
+          style: form
           explode: false
           schema:
             type: array
@@ -372,6 +373,7 @@ paths:
             maxItems: 6
             items:
               type: number
+          example: [-180, -90, 180, 90]
         - name: datetime
           in: query
           description: |
@@ -387,7 +389,9 @@ paths:
             minimum: 1
         - name: token
           in: query
-          description: Opaque pagination token carried by `next`/`prev` links
+          description: |
+            Opaque pagination token (implementation-specific; clients should
+            follow `rel="next"` links rather than constructing this parameter)
           schema:
             type: string
         - name: q
@@ -421,21 +425,25 @@ paths:
           description: |
             Sort directives (`collection-search#sort`): single comma-separated
             `[+|-]field` list, e.g. `sortby=+id,-created`
+          style: form
           explode: false
           schema:
             type: array
             items:
               type: string
+          example: ["+id", "-created"]
         - name: fields
           in: query
           description: |
             Field selectors (`collection-search#fields`): single comma-separated
             list; `-` prefix excludes, no prefix includes, e.g. `fields=id,-extent`
+          style: form
           explode: false
           schema:
             type: array
             items:
               type: string
+          example: ["id", "-extent"]
       responses:
         '200':
           description: A STAC Collections object
@@ -616,6 +624,55 @@ paths:
       responses:
         '200':
           description: A JSON Schema of queryable fields
+          content:
+            application/schema+json:
+              schema:
+                $ref: '#/components/schemas/Queryables'
+
+  # ----------------------------------------------------------------------
+  # 13. SCOPED COLLECTION SEARCH QUERYABLES / SORTABLES (Optional)
+  # ----------------------------------------------------------------------
+  /catalogs/{catalogId}/collection-queryables:
+    parameters:
+      - $ref: '#/components/parameters/catalogId'
+    get:
+      tags:
+        - "Discovery (Core)"
+      summary: Get queryable fields for collections within this sub-catalog
+      description: |
+        Returns the JSON Schema of collection metadata attributes available
+        for CQL2 filtering on `GET /catalogs/{catalogId}/collections`.
+        Expose only when `collection-search#filter` is bound via the
+        `.../multi-tenant-catalogs#collection-search` conformance class; the
+        scoped listing response links here with
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"`.
+      operationId: getCatalogCollectionQueryablesSchema
+      responses:
+        '200':
+          description: A JSON Schema of collection queryable fields
+          content:
+            application/schema+json:
+              schema:
+                $ref: '#/components/schemas/Queryables'
+
+  /catalogs/{catalogId}/collection-sortables:
+    parameters:
+      - $ref: '#/components/parameters/catalogId'
+    get:
+      tags:
+        - "Discovery (Core)"
+      summary: Get sortable fields for collections within this sub-catalog
+      description: |
+        Returns the JSON Schema of collection metadata attributes available
+        for `sortby` on `GET /catalogs/{catalogId}/collections`.
+        Expose only when `collection-search#sort` is bound via the
+        `.../multi-tenant-catalogs#collection-search` conformance class; the
+        scoped listing response links here with
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"`.
+      operationId: getCatalogCollectionSortablesSchema
+      responses:
+        '200':
+          description: A JSON Schema of collection sortable fields
           content:
             application/schema+json:
               schema:

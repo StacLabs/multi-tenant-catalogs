@@ -62,6 +62,8 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
 | `GET` | `/catalogs/{catalogId}/collections` | **Scoped Collections List.** Lists the collections directly linked to this sub-catalog. The STAC Collection Search parameters apply if the API advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — see [Scoped Collection Listing](#scoped-collection-listing). |
+| `GET` | `/catalogs/{catalogId}/collection-queryables` | Collection Search queryables for the scoped collections listing. Expose only when `collection-search#filter` is bound via the `#collection-search` marker class. |
+| `GET` | `/catalogs/{catalogId}/collection-sortables` | Collection Search sortables for the scoped collections listing. Expose only when `collection-search#sort` is bound via the `#collection-search` marker class. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
@@ -103,10 +105,24 @@ scoped endpoint:
   NOT cause collections outside that scope to be exposed.
 * Pagination follows standard STAC conventions (`first`, `prev`, `next`,
   `last` links); `limit` constrains the page size.
-* If `collection-search#filter` is bound, the response MUST link to a
-  Collection Search queryables endpoint. The scoped path SHOULD NOT conflict
-  with `/catalogs/{catalogId}/queryables`; this extension proposes
+* If `collection-search#filter` is bound, the response `links` array MUST
+  include a link with
+  `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"` and
+  `type="application/schema+json"` pointing to a Collection Search
+  queryables endpoint. The scoped path SHOULD NOT conflict with
+  `/catalogs/{catalogId}/queryables`; this extension proposes
   `/catalogs/{catalogId}/collection-queryables`.
+* If `collection-search#sort` is bound, the response `links` array MUST
+  include a link with
+  `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"` and
+  `type="application/schema+json"` pointing to a Collection Search sortables
+  endpoint. To avoid collisions, this extension proposes
+  `/catalogs/{catalogId}/collection-sortables`.
+* Unlike STAC Item Search, the Collection Search binding on
+  `/catalogs/{catalogId}/collections` applies strictly to `GET` requests.
+  `POST /catalogs/{catalogId}/collections` remains reserved for the
+  Transaction Extension (collection creation and linking) and MUST NOT
+  accept search request bodies.
 
 Whether the API also exposes a flat `/collections` listing is irrelevant;
 the capability is a property of the catalogs extension itself.
