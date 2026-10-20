@@ -666,7 +666,7 @@ paths:
       description: |
         Returns the JSON Schema of collection metadata attributes available
         for `sortby` on `GET /catalogs/{catalogId}/collections`.
-        Expose only when `collection-search#sort` is bound via the
+        Expose only when `collection-search#sortables` is bound via the
         `.../multi-tenant-catalogs#collection-search` conformance class; the
         scoped listing response links here with
         `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"`.
@@ -794,7 +794,11 @@ components:
       description: A JSON Schema object for queryables
     Sortables:
       type: object
-      description: A JSON Schema object defining sortable resource properties
+      description: |
+        A JSON Schema object defining sortable resource properties, per
+        OGC API - Features - Part 5: no object/array-typed or spatial
+        properties; `additionalProperties: false` means undeclared
+        `sortby` fields return 400
     SearchBody:
       type: object
       description: STAC Item Search request body (same shape as the core /search endpoint). Supports spatial (bbox, intersects), temporal (datetime), and collection filtering.
