@@ -94,6 +94,12 @@ scoped endpoint:
 | `https://api.stacspec.org/v1.1.0/collection-search#sort` | `sortby` |
 | `https://api.stacspec.org/v1.0.0/collection-search#fields` | `fields` |
 
+The upstream base class also presumes
+`http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query`, and
+`#filter` presumes a CQL2 conformance class
+(`http://www.opengis.net/spec/cql2/1.0/conf/cql2-text` or `.../cql2-json`);
+advertise these alongside the classes above as applicable.
+
 * An implementation MUST only accept Collection Search parameters on this
   endpoint if it advertises the marker class, and each parameter group
   applies only when the corresponding upstream conformance class is also
@@ -124,8 +130,11 @@ scoped endpoint:
   Transaction Extension (collection creation and linking) and MUST NOT
   accept search request bodies.
 
-Whether the API also exposes a flat `/collections` listing is irrelevant;
-the capability is a property of the catalogs extension itself.
+Because parameter groups are bound through the upstream conformance
+classes, this binding presumes the API also serves `GET /collections`
+under Collection Search — advertising the upstream classes without that
+endpoint would claim conformance the implementation cannot satisfy.
+Advertising only the marker class binds no search parameters.
 
 ### Transactions (Management)
 These endpoints allow for the dynamic creation and deletion of the federation structure. 

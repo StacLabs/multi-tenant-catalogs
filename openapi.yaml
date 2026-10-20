@@ -390,8 +390,9 @@ paths:
         - name: token
           in: query
           description: |
-            Opaque pagination token (implementation-specific; clients should
-            follow `rel="next"` links rather than constructing this parameter)
+            Opaque pagination token (implementation convention, not part of
+            upstream Collection Search; clients should follow `rel="next"`
+            links rather than constructing this parameter)
           schema:
             type: string
         - name: q
