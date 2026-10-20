@@ -677,7 +677,7 @@ paths:
           content:
             application/schema+json:
               schema:
-                $ref: '#/components/schemas/Queryables'
+                $ref: '#/components/schemas/Sortables'
 
 components:
   parameters:
@@ -792,6 +792,9 @@ components:
     Queryables:
       type: object
       description: A JSON Schema object for queryables
+    Sortables:
+      type: object
+      description: A JSON Schema object defining sortable resource properties
     SearchBody:
       type: object
       description: STAC Item Search request body (same shape as the core /search endpoint). Supports spatial (bbox, intersects), temporal (datetime), and collection filtering.
