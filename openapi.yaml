@@ -347,7 +347,61 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: List collections within a specific sub-catalog
+      description: |
+        Returns the collections directly linked to {catalogId} (not recursive
+        into descendant Sub-Catalogs).
+
+        MAY accept STAC API - Collection Search query parameters, applied only
+        to this catalog's linked collections, if the API advertises the
+        `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search`
+        conformance class.
       operationId: getCatalogCollections
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of collections to return.
+          schema:
+            type: integer
+        - name: bbox
+          in: query
+          description: Only return collections intersecting the bounding box.
+          schema:
+            type: array
+        - name: datetime
+          in: query
+          description: Only return collections intersecting the datetime interval.
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Free-text search over collection fields.
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: A CQL2 filter expression.
+          schema:
+            type: string
+        - name: filter-lang
+          in: query
+          description: The language of the `filter` expression (e.g., `cql2-text`, `cql2-json`).
+          schema:
+            type: string
+        - name: filter-crs
+          in: query
+          description: The CRS used by coordinate literals in the `filter` expression.
+          schema:
+            type: string
+        - name: sortby
+          in: query
+          description: Comma-separated list of sort fields, prefixed by `+` or `-`.
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Comma-separated list of fields to include or exclude.
+          schema:
+            type: string
       responses:
         '200':
           description: A STAC Collections object

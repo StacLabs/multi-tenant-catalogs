@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Scoped Collection Search:** Documented that `GET /catalogs/{catalogId}/collections` MAY accept STAC API - Collection Search query parameters (`limit`, `bbox`, `datetime`, `q`, `filter`/`filter-lang`/`filter-crs`, `sortby`, `fields`) applied strictly to the catalog's directly linked collections (not recursive into descendants). Introduced the optional `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` conformance class, required for implementations that accept these parameters, and declared the parameters in `openapi.yaml`.
+
 ### Changed
 - **Core Collection Updates:** Reworded the note in Scoped Collection Update (Section 2.1). Implementations SHOULD now keep a collection's `parent_ids` when it is updated through the core `PUT /collections/{collectionId}` route. The previous note told clients to update collections only through the scoped route because the core route could lose the hierarchy; clients still SHOULD do so where an implementation doesn't preserve `parent_ids`.
 

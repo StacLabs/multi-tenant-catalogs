@@ -6,6 +6,8 @@
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs` (required)
   - `https://api.stacspec.org/v1.0.0/item-search` (required IF implementing scoped search)
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search` (optional)
+  - `https://api.stacspec.org/v1.0.0/collection-search` (required IF implementing scoped collection search)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` (optional)
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0/children` (recommended)
   - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
@@ -16,6 +18,7 @@
   - [STAC API - Collections](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features)
   - [STAC API - Children](https://github.com/stac-api-extensions/children)
   - [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/main/item-search) (Required if implementing scoped search)
+  - [STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search) (Required if implementing scoped collection search)
   - [STAC API - Transaction](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction) (Reference pattern)
 - **Owner**: @jonhealy1
 
@@ -59,7 +62,7 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
-| `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
+| `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. Accepting Collection Search query parameters additionally requires the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` conformance class. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
@@ -92,6 +95,16 @@ To properly support the recursive nature of the Multi-Tenant Catalogs extension,
 2. All Collections linked to **any descendant Sub-Catalog** nested beneath `{catalogId}`.
 
 **Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error (`403 Forbidden`).
+
+## Scoped Collection Search (Optional)
+
+If an implementation supports the `Collection Search` conformance class, it MAY accept Collection Search query parameters on the scoped collections endpoint (`GET /catalogs/{catalogId}/collections`).
+
+If an implementation accepts these parameters, it **MUST** advertise the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` conformance class, and **SHOULD** advertise the `collection-search` conformance classes corresponding to the parameter groups it supports (e.g., `#fields`, `#sort`, `#free-text`, `#filter`, `#query`). Implementations that do not support these parameters **MUST NOT** advertise the conformance class.
+
+Supported parameters MUST follow the exact same syntax and semantics defined by [STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search) for the core `GET /collections` endpoint, but their evaluation scope is strictly bound to the collections directly linked to `{catalogId}`.
+
+Unlike [Scoped Search](#scoped-search-recursive-traversal), this endpoint is **not** recursive: it MUST only evaluate Collections directly linked as children of `{catalogId}`, and MUST NOT include Collections linked only to descendant Sub-Catalogs.
 
 ## Poly-Hierarchy (Multi-Parenting)
 
@@ -302,6 +315,7 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
     "https://api.stacspec.org/v1.0.0/core",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search",
+    "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction",
     "https://api.stacspec.org/v1.0.0/children",
     "https://api.stacspec.org/v1.0.0/children#type-filter"
