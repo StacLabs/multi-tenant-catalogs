@@ -61,6 +61,7 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
 | `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
+| `GET` | `/catalogs/{catalogId}/collections/{collectionId}/queryables` | Filter Extension. Lists fields available for filtering in this collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
 
@@ -92,6 +93,14 @@ To properly support the recursive nature of the Multi-Tenant Catalogs extension,
 2. All Collections linked to **any descendant Sub-Catalog** nested beneath `{catalogId}`.
 
 **Security & Intersections:** The API MUST ensure that users cannot escape the catalog boundary. If a user provides a `collections` array in their search payload, the API MUST compute the intersection of the user's requested collections and the catalog's allowed descendant collections. Any requested collections outside of the descendant tree MUST be ignored or result in an authorization error (`403 Forbidden`).
+
+## Sub-Catalog Conformance
+
+`GET /catalogs/{catalogId}/conformance` declares the conformance classes of the scoped endpoints under `/catalogs/{catalogId}`. [STAC API - Core](https://github.com/radiantearth/stac-api-spec/blob/main/core) limits declared conformance classes to the catalog that declares them, so a sub-catalog can declare a different set from the Global Root.
+
+* The response SHOULD list the conformance classes that the scoped endpoints implement. For example, if `/catalogs/{catalogId}/collections` or the scoped search accepts `filter` or `sortby`, the response lists the matching Filter, CQL2 and Sort classes.
+* The response SHOULD NOT list classes that only the global endpoints implement. For example, an API that exposes `/aggregate` but no scoped aggregate endpoint leaves the Aggregation class out of this response.
+* If the Sub-Catalog Landing Page (`/catalogs/{catalogId}`) includes `conformsTo`, it MUST list the same classes as `/catalogs/{catalogId}/conformance`.
 
 ## Poly-Hierarchy (Multi-Parenting)
 
@@ -231,6 +240,8 @@ This resource, and all of its sub-resources, represents a Collection within the 
 > - `/catalogs/{catalogId}/collections/{collectionId}/queryables`
 > - `/collections/{collectionId}/queryables`
 > - `/queryables?collections={collectionId}`
+
+When the API implements an extension that defines a link on `/collections/{collectionId}`, such as the [Filter](https://github.com/stac-api-extensions/filter) queryables link, the [Sort](https://github.com/stac-api-extensions/sort) sortables link, or the [Aggregation](https://github.com/stac-api-extensions/aggregation) `aggregate` and `aggregations` links, the scoped collection SHOULD include the same link, with the `rel` that extension defines. The `href` MAY point to the global endpoint (for example `/collections/{collectionId}/queryables`), which the conformance classes of the Global Root cover, or to a scoped equivalent where the API exposes one (see [Sub-Catalog Conformance](#sub-catalog-conformance)).
 
 > [!WARNING]
 > The `rel="duplicate"` link is optional to allow implementations to omit the reference if such endpoints should be protected and hidden from clients. Otherwise, it is RECOMMENDED to provide these links for better interoperability and discoverability, allowing clients to deduplicate resources in their UIs.
@@ -438,9 +449,10 @@ This example demonstrates a Collection accessed via a specific sub-catalog (`for
 
 ### Filter Extension & Queryables
 
-This extension reserves the path `/catalogs/{catalogId}/queryables` to support the **STAC Filter Extension** within a sub-catalog context.
+This extension reserves the paths `/catalogs/{catalogId}/queryables` and `/catalogs/{catalogId}/collections/{collectionId}/queryables` to support the **STAC Filter Extension** within a sub-catalog context.
 
-However, implementation of this endpoint is **OPTIONAL**.
+However, implementation of these endpoints is **OPTIONAL**.
 
-* A sub-catalog **MUST** only expose this endpoint if it advertises conformance to the Filter Extension URI (e.g., `https://api.stacspec.org/v1.0.0/filter`) in the Sub-Catalog Landing Page (`/catalogs/{catalogId}`).
-* If implemented, the queryables response must be scoped specifically to that sub-catalog.
+* A sub-catalog **MUST** only expose these endpoints if `/catalogs/{catalogId}/conformance` lists the Filter conformance class (`http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`). See [Sub-Catalog Conformance](#sub-catalog-conformance).
+* If implemented, the `/catalogs/{catalogId}/queryables` response must be scoped specifically to that sub-catalog.
+* If implemented, the `/catalogs/{catalogId}/collections/{collectionId}/queryables` response describes that collection, as `/collections/{collectionId}/queryables` does.
