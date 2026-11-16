@@ -100,7 +100,9 @@ To properly support the recursive nature of the Multi-Tenant Catalogs extension,
 
 If an implementation supports the `Collection Search` conformance class, it MAY accept Collection Search query parameters on the scoped collections endpoint (`GET /catalogs/{catalogId}/collections`).
 
-If an implementation accepts these parameters, it **MUST** advertise the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` conformance class, and **SHOULD** advertise the `collection-search` conformance classes corresponding to the parameter groups it supports (e.g., `#fields`, `#sort`, `#free-text`, `#filter`, `#query`). Implementations that do not support these parameters **MUST NOT** advertise the conformance class.
+If an implementation accepts these parameters, it **MUST** advertise the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search` conformance class, and **SHOULD** advertise the `collection-search` conformance classes corresponding to the parameter groups it supports (e.g., `#fields`, `#sort`, `#free-text`, `#advanced-free-text`, `#filter`). Implementations that do not support these parameters **MUST NOT** advertise the conformance class.
+
+Implementations accepting Collection Search parameters **MUST** implement the Collection Search Basics parameters (`bbox`, `datetime`, `limit`) required by the `https://api.stacspec.org/v1.0.0/collection-search` conformance class, and **SHOULD** advertise the OGC API - Common `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query` conformance class. The `query` parameter group is not available for Collection Search (it is defined only for `POST` endpoints that accept JSON); use `filter` instead.
 
 Supported parameters MUST follow the exact same syntax and semantics defined by [STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search) for the core `GET /collections` endpoint, but their evaluation scope is strictly bound to the collections directly linked to `{catalogId}`.
 
@@ -313,6 +315,9 @@ The global root remains a standard STAC Landing Page. Note the addition of the `
   "description": "A standard STAC API that also supports multi-tenant catalogs.",
   "conformsTo": [
     "https://api.stacspec.org/v1.0.0/core",
+    "https://api.stacspec.org/v1.0.0/item-search",
+    "https://api.stacspec.org/v1.0.0/collection-search",
+    "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/search",
     "https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/collection-search",

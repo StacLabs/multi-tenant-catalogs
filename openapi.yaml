@@ -362,11 +362,16 @@ paths:
           description: Maximum number of collections to return.
           schema:
             type: integer
+            minimum: 1
         - name: bbox
           in: query
-          description: Only return collections intersecting the bounding box.
+          description: Only return collections intersecting the bounding box (minx,miny,maxx,maxy or minx,miny,minz,maxx,maxy,maxz).
           schema:
             type: array
+            minItems: 4
+            maxItems: 6
+            items:
+              type: number
         - name: datetime
           in: query
           description: Only return collections intersecting the datetime interval.
@@ -384,14 +389,17 @@ paths:
             type: string
         - name: filter-lang
           in: query
-          description: The language of the `filter` expression (e.g., `cql2-text`, `cql2-json`).
+          description: The language of the `filter` expression.
           schema:
             type: string
+            enum: [cql2-text, cql2-json]
+            default: cql2-text
         - name: filter-crs
           in: query
           description: The CRS used by coordinate literals in the `filter` expression.
           schema:
             type: string
+            default: "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
         - name: sortby
           in: query
           description: Comma-separated list of sort fields, prefixed by `+` or `-`.
