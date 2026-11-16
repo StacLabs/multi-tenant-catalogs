@@ -355,9 +355,12 @@ paths:
         advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
         conformance class, and each parameter group then applies only when the
         corresponding upstream `collection-search` conformance class is also
-        advertised. All constraints are ANDed onto the catalog scope and MUST
-        NOT expose collections outside `{catalogId}` (see "Scoped Collection
-        Listing" in the README).
+        advertised (matched regardless of its version segment). `limit` and
+        `token` are pagination primitives that MAY be accepted regardless;
+        other parameters received while their group is not bound SHOULD
+        return 400. All constraints are ANDed onto the catalog scope and
+        MUST NOT expose collections outside `{catalogId}` (see "Scoped
+        Collection Listing" in the README).
       operationId: getCatalogCollections
       parameters:
         - name: bbox
@@ -383,14 +386,17 @@ paths:
             type: string
         - name: limit
           in: query
-          description: Page size limit (`collection-search`); paginate via `next` links
+          description: |
+            Page size limit (pagination primitive, not gated by the
+            `#collection-search` marker); paginate via `next` links
           schema:
             type: integer
             minimum: 1
         - name: token
           in: query
           description: |
-            Opaque pagination token (implementation convention, not part of
+            Opaque pagination token (pagination primitive, not gated by the
+            `#collection-search` marker; implementation convention, not part of
             upstream Collection Search; clients should follow `rel="next"`
             links rather than constructing this parameter)
           schema:
@@ -646,7 +652,11 @@ paths:
         Expose only when `collection-search#filter` is bound via the
         `.../multi-tenant-catalogs#collection-search` conformance class; the
         scoped listing response links here with
-        `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"`.
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"`. This path
+        is RECOMMENDED (it avoids the item-level
+        `/catalogs/{catalogId}/queryables`), but the link is authoritative
+        and implementations may choose another path. The schema SHOULD NOT
+        expose hierarchy fields (e.g., `parent_ids`).
       operationId: getCatalogCollectionQueryablesSchema
       responses:
         '200':
@@ -669,7 +679,10 @@ paths:
         Expose only when `collection-search#sortables` is bound via the
         `.../multi-tenant-catalogs#collection-search` conformance class; the
         scoped listing response links here with
-        `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"`.
+        `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"`. This path
+        is RECOMMENDED, but the link is authoritative and implementations
+        may choose another path. The schema SHOULD NOT expose hierarchy
+        fields (e.g., `parent_ids`).
       operationId: getCatalogCollectionSortablesSchema
       responses:
         '200':
