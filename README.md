@@ -105,6 +105,13 @@ advertise these alongside the classes above as applicable.
   endpoint if it advertises the marker class, and each parameter group
   applies only when the corresponding upstream conformance class is also
   advertised.
+* The upstream base class
+  `https://api.stacspec.org/v1.0.0/collection-search` MUST be advertised
+  whenever any Collection Search parameter group is bound: the optional
+  `#free-text`, `#filter`, `#sort`, and `#fields` classes are defined only
+  as additions to the base parameter set, so an implementation binding any
+  of them MUST also implement `bbox`, `datetime`, and `limit` on this
+  endpoint.
 * Parameter syntax, defaults, and matching semantics are exactly as defined
   by the upstream extension, with one addition: all constraints are ANDed
   onto the catalog scope. A `bbox`, `datetime`, `q`, or `filter` constraint
