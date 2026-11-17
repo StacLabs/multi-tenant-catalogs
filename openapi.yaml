@@ -545,7 +545,9 @@ paths:
       description: |
         OPTIONAL. Exposed only if `/catalogs/{catalogId}/conformance` lists
         `http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`.
-        The response describes this collection, as `/collections/{collectionId}/queryables` does.
+        The response lists the queryable fields for filtering items in this
+        collection, as `/collections/{collectionId}/queryables` does for the
+        global route.
       operationId: getCatalogCollectionQueryables
       responses:
         '200':

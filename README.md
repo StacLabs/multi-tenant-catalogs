@@ -54,14 +54,14 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `GET` | `/catalogs` | **The Registry.** Lists all available sub-catalogs. |
 | `GET` | `/catalogs/{catalogId}` | **Sub-Catalog Root.** Acts as the Landing Page for the provider. |
 | `GET` | `/catalogs/{catalogId}/conformance` | Conformance classes specific to this sub-catalog. |
-| `GET` | `/catalogs/{catalogId}/queryables` | Filter Extension. Lists fields available for filtering in this sub-catalog. |
+| `GET` | `/catalogs/{catalogId}/queryables` | Filter Extension. Lists the queryable fields for filtering items in this sub-catalog. **OPTIONAL.** Expose only if `/catalogs/{catalogId}/conformance` lists the Filter class (`http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`). |
 | `GET` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
 | `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
-| `GET` | `/catalogs/{catalogId}/collections/{collectionId}/queryables` | Filter Extension. Lists fields available for filtering in this collection. |
+| `GET` | `/catalogs/{catalogId}/collections/{collectionId}/queryables` | Filter Extension. Lists the queryable fields for filtering items in this collection. **OPTIONAL.** Expose only if `/catalogs/{catalogId}/conformance` lists the Filter class (`http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`). |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
 
@@ -455,4 +455,4 @@ However, implementation of these endpoints is **OPTIONAL**.
 
 * A sub-catalog **MUST** only expose these endpoints if `/catalogs/{catalogId}/conformance` lists the Filter conformance class (`http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`). See [Sub-Catalog Conformance](#sub-catalog-conformance).
 * If implemented, the `/catalogs/{catalogId}/queryables` response must be scoped specifically to that sub-catalog.
-* If implemented, the `/catalogs/{catalogId}/collections/{collectionId}/queryables` response describes that collection, as `/collections/{collectionId}/queryables` does.
+* If implemented, the `/catalogs/{catalogId}/collections/{collectionId}/queryables` response lists the queryable fields for filtering items in that collection, as `/collections/{collectionId}/queryables` does for the global route.

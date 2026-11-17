@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Scoped Search Responses:** Documented the `403 Forbidden` response on `GET` and `POST /catalogs/{catalogId}/search` in `openapi.yaml` for implementations that reject, rather than ignore, requested `collections` outside the catalog's descendant tree, as the README already permits. Named the status code in the README.
 - **Link-by-Reference Responses:** Documented the `404 Not Found` response on `POST /catalogs/{catalogId}/catalogs` and `POST /catalogs/{catalogId}/collections` in `openapi.yaml` for an id-only payload whose `id` does not exist, which the README already requires.
-- **Scoped Collection Queryables:** The README now reserves `/catalogs/{catalogId}/collections/{collectionId}/queryables`, which `openapi.yaml` already defines, and lists it in the Discovery table. Both queryables paths remain OPTIONAL.
+- **Scoped Collection Queryables:** The README now reserves `/catalogs/{catalogId}/collections/{collectionId}/queryables`, which `openapi.yaml` already defines, and lists it in the Discovery table. Both queryables paths remain OPTIONAL, and their Discovery rows now say they are exposed only when `/catalogs/{catalogId}/conformance` lists the Filter class.
 - **Filter Conformance URI:** Replaced `https://api.stacspec.org/v1.0.0/filter`, which the Filter Extension does not define, with `http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`.
 
 ## [v1.0.0] - 2026-09-17
