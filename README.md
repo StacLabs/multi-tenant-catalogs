@@ -111,17 +111,19 @@ advertise these alongside the classes above as applicable.
 * An implementation MUST only accept Collection Search parameters on this
   endpoint if it advertises the marker class, and each parameter group
   applies only when the corresponding upstream conformance class is also
-  advertised. The marker class MUST be advertised in the landing page
-  `conformsTo`, and SHOULD also be listed by
+  advertised. The marker class MUST be advertised in the Global Root (`/`)
+  landing page `conformsTo`, and SHOULD also be listed by
   `GET /catalogs/{catalogId}/conformance`.
 * The upstream `collection-search` base class MUST be advertised whenever
   any Collection Search parameter group is bound: the optional
   `#free-text`, `#filter`, `#sort`, and `#fields` classes are defined only
   as additions to the base parameter set, so an implementation binding any
-  of them MUST also implement `bbox` and `datetime` on this endpoint.
+  of them MUST also implement `bbox`, `datetime`, and `limit` on this
+  endpoint.
 * `limit` and `token` are pagination primitives of this endpoint, not
   Collection Search bindings: implementations MAY accept them regardless
-  of the marker class. If a Collection Search parameter other than `limit`
+  of the marker class, though `limit` becomes REQUIRED once the base class
+  is bound, since upstream mandates it alongside `bbox` and `datetime`. If a Collection Search parameter other than `limit`
   or `token` is received while its parameter group is not bound, the
   implementation SHOULD return `400 Bad Request` rather than silently
   ignoring the constraint, so clients are not misled into believing it was
