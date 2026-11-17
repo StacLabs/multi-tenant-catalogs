@@ -226,6 +226,13 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: Get conformance classes for this specific sub-catalog
+      description: |
+        Declares the conformance classes of the scoped endpoints under
+        `/catalogs/{catalogId}` (see "Sub-Catalog Conformance" in the README).
+        The response SHOULD list the classes the scoped endpoints implement and
+        SHOULD NOT list classes that only the global endpoints implement. If
+        `/catalogs/{catalogId}` includes `conformsTo`, it MUST list the same
+        classes as this endpoint.
       operationId: getCatalogConformance
       responses:
         '200':
@@ -509,6 +516,13 @@ paths:
         
         Conversely, `/collections/{collectionId}` MAY also include `rel="duplicate"` links to their 
         `/catalogs/{catalogId}/collections/{collectionId}` counterparts.
+
+        **Note on Extension Links:** When the API implements an extension that defines a link
+        on `/collections/{collectionId}` (for example Filter queryables, Sort sortables, or
+        Aggregation `aggregate` and `aggregations`), this response SHOULD include the same link,
+        with the `rel` that extension defines. The `href` MAY point to the global endpoint
+        (for example `/collections/{collectionId}/queryables`) or to a scoped equivalent where
+        the API exposes one.
       operationId: getCatalogCollection
       responses:
         '200':
@@ -607,6 +621,10 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: Get queryable fields for this sub-catalog
+      description: |
+        OPTIONAL. Exposed only if `/catalogs/{catalogId}/conformance` lists
+        `http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`.
+        The response is scoped to this sub-catalog.
       operationId: getCatalogQueryables
       responses:
         '200':
@@ -627,6 +645,12 @@ paths:
       tags:
         - "Discovery (Core)"
       summary: Get queryable fields for a specific collection
+      description: |
+        OPTIONAL. Exposed only if `/catalogs/{catalogId}/conformance` lists
+        `http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`.
+        The response lists the queryable fields for filtering items in this
+        collection, as `/collections/{collectionId}/queryables` does for the
+        global route.
       operationId: getCatalogCollectionQueryables
       responses:
         '200':

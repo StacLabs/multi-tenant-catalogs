@@ -12,10 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Core Collection Updates:** Reworded the note in Scoped Collection Update (Section 2.1). Implementations SHOULD now keep a collection's `parent_ids` when it is updated through the core `PUT /collections/{collectionId}` route. The previous note told clients to update collections only through the scoped route because the core route could lose the hierarchy; clients still SHOULD do so where an implementation doesn't preserve `parent_ids`.
+- **Scoped Collection Extension Links:** `GET /catalogs/{catalogId}/collections/{collectionId}` SHOULD now include the links that implemented extensions (such as Filter, Sort and Aggregation) define on `/collections/{collectionId}`, with the same `rel`. The `href` MAY point to the global endpoint or to a scoped equivalent.
+- **Sub-Catalog Conformance:** Added a section on what `GET /catalogs/{catalogId}/conformance` lists: it SHOULD list the classes the scoped endpoints implement and SHOULD NOT list classes that only the global endpoints implement. A `conformsTo` array on `/catalogs/{catalogId}` MUST list the same classes. The Filter Extension & Queryables rule now checks this endpoint instead of the Sub-Catalog Landing Page.
 
 ### Fixed
 - **Scoped Search Responses:** Documented the `403 Forbidden` response on `GET` and `POST /catalogs/{catalogId}/search` in `openapi.yaml` for implementations that reject, rather than ignore, requested `collections` outside the catalog's descendant tree, as the README already permits. Named the status code in the README.
 - **Link-by-Reference Responses:** Documented the `404 Not Found` response on `POST /catalogs/{catalogId}/catalogs` and `POST /catalogs/{catalogId}/collections` in `openapi.yaml` for an id-only payload whose `id` does not exist, which the README already requires.
+- **Scoped Collection Queryables:** The README now reserves `/catalogs/{catalogId}/collections/{collectionId}/queryables`, which `openapi.yaml` already defines, and lists it in the Discovery table. Both queryables paths remain OPTIONAL, and their Discovery rows now say they are exposed only when `/catalogs/{catalogId}/conformance` lists the Filter class.
+- **Filter Conformance URI:** Replaced `https://api.stacspec.org/v1.0.0/filter`, which the Filter Extension does not define, with `http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter`.
 
 ## [v1.0.0] - 2026-09-17
 
