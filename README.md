@@ -9,12 +9,14 @@
   - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs/transaction` (optional)
   - `https://api.stacspec.org/v1.0.0/children` (recommended)
   - `https://api.stacspec.org/v1.0.0/children#type-filter` (optional; required if implementing `?type` filtering)
+  - `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` (optional; binds advertised STAC API Collection Search conformance classes to the scoped collections listing)
 - **Scope:** STAC API - Core
 - **Extension Maturity Classification:** Proposal
 - **Dependencies:**
   - [STAC API - Core](https://github.com/radiantearth/stac-api-spec/blob/main/core)
   - [STAC API - Collections](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features)
   - [STAC API - Children](https://github.com/stac-api-extensions/children)
+  - [STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search) (Optional; defines the parameter semantics bound by `#collection-search`)
   - [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/main/item-search) (Required if implementing scoped search)
   - [STAC API - Transaction](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction) (Reference pattern)
 - **Owner**: @jonhealy1
@@ -59,10 +61,113 @@ Instead, implementations SHOULD maintain a backend mapping of parent-child relat
 | `POST` | `/catalogs/{catalogId}/search` | **Scoped Search.** Performs a STAC search strictly bounded to this catalog's descendant tree. |
 | `GET` | `/catalogs/{catalogId}/children` | **Children (Recommended).** Lists all child resources (Catalogs and Collections). Expose this endpoint only if the API advertises the `https://api.stacspec.org/v1.0.0/children` conformance class. Filtering via `?type=Catalog` or `?type=Collection` additionally requires the `https://api.stacspec.org/v1.0.0/children#type-filter` conformance class. |
 | `GET` | `/catalogs/{catalogId}/catalogs` | **Sub-Catalogs List.** Lists only the child catalogs of this catalog (for hierarchy traversal). |
-| `GET` | `/catalogs/{catalogId}/collections` | Lists collections belonging to this sub-catalog. |
+| `GET` | `/catalogs/{catalogId}/collections` | **Scoped Collections List.** Lists the collections directly linked to this sub-catalog. The STAC Collection Search parameters apply if the API advertises the `https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search` conformance class — see [Scoped Collection Listing](#scoped-collection-listing). |
+| `GET` | `/catalogs/{catalogId}/collection-queryables` | Collection Search queryables for the scoped collections listing (recommended path; the `queryables` link is authoritative and the path is implementation-chosen). Applies only when `collection-search#filter` is bound via the `#collection-search` marker class. |
+| `GET` | `/catalogs/{catalogId}/collection-sortables` | Collection Search sortables for the scoped collections listing (recommended path; the `sortables` link is authoritative and the path is implementation-chosen). Applies only when `collection-search#sortables` is bound via the `#collection-search` marker class. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}` | Gets a specific collection definition. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items` | **Item Search.** Fetches items from this specific collection. |
 | `GET` | `/catalogs/{catalogId}/collections/{collectionId}/items/{itemId}` | Gets a single specific item. |
+
+#### Scoped Collection Listing
+
+`GET /catalogs/{catalogId}/collections` is the catalog-scoped counterpart of
+the STAC `/collections` listing. It returns the collections **directly
+linked** to `{catalogId}` — the same set exposed through the catalog's
+`rel="child"` links and the `/catalogs/{catalogId}/children` endpoint.
+Collections reachable only through descendant sub-catalogs are discoverable
+via the scoped [search endpoints](#scoped-search-recursive-traversal) or via
+the descendant catalogs' own scoped listings.
+
+Rather than redefining query parameters, this extension reuses the
+[STAC API - Collection Search](https://github.com/stac-api-extensions/collection-search)
+extension. The
+`https://api.stacspec.org/v1.0.0/multi-tenant-catalogs#collection-search`
+conformance class acts as a **binding marker**: when advertised, the
+Collection Search conformance classes the API advertises also apply to this
+scoped endpoint:
+
+| Bound upstream conformance class | Parameters |
+| :--- | :--- |
+| `collection-search` (base class) | `bbox`, `datetime` |
+| `collection-search#free-text` (or `#advanced-free-text`) | `q` |
+| `collection-search#filter` | `filter`, `filter-lang`, `filter-crs` |
+| `collection-search#sort` | `sortby` |
+| `collection-search#sortables` | Sortables endpoint & link (no parameters) |
+| `collection-search#fields` | `fields` |
+
+Binding is per parameter group — it is not all-or-nothing — and matches on
+the conformance class regardless of its version segment. Implementations
+advertise different releases of these classes (e.g.,
+`https://api.stacspec.org/v1.0.0/collection-search` vs
+`.../v1.0.0-rc.1/collection-search#filter`), so the marker binds whichever
+version of each class the API advertises.
+
+The upstream base class also presumes
+`http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query`, and
+`#filter` presumes a CQL2 conformance class
+(`http://www.opengis.net/spec/cql2/1.0/conf/cql2-text` or `.../cql2-json`);
+advertise these alongside the classes above as applicable.
+
+* An implementation MUST only accept Collection Search parameters on this
+  endpoint if it advertises the marker class, and each parameter group
+  applies only when the corresponding upstream conformance class is also
+  advertised. The marker class MUST be advertised in the Global Root (`/`)
+  landing page `conformsTo`, and SHOULD also be listed by
+  `GET /catalogs/{catalogId}/conformance`.
+* The upstream `collection-search` base class MUST be advertised whenever
+  any Collection Search parameter group is bound: the optional
+  `#free-text`, `#filter`, `#sort`, and `#fields` classes are defined only
+  as additions to the base parameter set, so an implementation binding any
+  of them MUST also implement `bbox`, `datetime`, and `limit` on this
+  endpoint.
+* `limit` and `token` are pagination primitives of this endpoint, not
+  Collection Search bindings: implementations MAY accept them regardless
+  of the marker class, though `limit` becomes REQUIRED once the base class
+  is bound, since upstream mandates it alongside `bbox` and `datetime`. If a Collection Search parameter other than `limit`
+  or `token` is received while its parameter group is not bound, the
+  implementation SHOULD return `400 Bad Request` rather than silently
+  ignoring the constraint, so clients are not misled into believing it was
+  applied.
+* Parameter syntax, defaults, and matching semantics are exactly as defined
+  by the upstream extension, with one addition: all constraints are ANDed
+  onto the catalog scope. A `bbox`, `datetime`, `q`, or `filter` constraint
+  narrows the set of collections directly linked to `{catalogId}` and MUST
+  NOT cause collections outside that scope to be exposed.
+* Pagination follows standard STAC conventions (`first`, `prev`, `next`,
+  `last` links); `limit` constrains the page size.
+* If `collection-search#filter` is bound, the response `links` array MUST
+  include a link with
+  `rel="http://www.opengis.net/def/rel/ogc/1.0/queryables"` and
+  `type="application/schema+json"` pointing to a Collection Search
+  queryables endpoint. The link is normative and the path is
+  implementation-chosen, as upstream; this extension RECOMMENDS
+  `/catalogs/{catalogId}/collection-queryables` because
+  `/catalogs/{catalogId}/queryables` already serves the item-level Filter
+  Extension queryables.
+* If `collection-search#sortables` is bound, the response `links` array MUST
+  include a link with
+  `rel="http://www.opengis.net/def/rel/ogc/1.0/sortables"` and
+  `type="application/schema+json"` pointing to a Collection Search sortables
+  endpoint. The link is normative and the path is implementation-chosen
+  (upstream defines no fixed sortables path); this extension RECOMMENDS
+  `/catalogs/{catalogId}/collection-sortables`. If `#sort` is bound without
+  `#sortables`, an implementation SHOULD return `400 Bad Request` when a
+  `sortby` field is not sortable.
+* Scoped queryables and sortables schemas SHOULD NOT expose
+  hierarchy-management fields (e.g., `parent_ids`) or other fields that
+  would reveal a collection's membership in catalogs the caller cannot
+  access.
+* Unlike STAC Item Search, the Collection Search binding on
+  `/catalogs/{catalogId}/collections` applies strictly to `GET` requests.
+  `POST /catalogs/{catalogId}/collections` remains reserved for the
+  Transaction Extension (collection creation and linking) and MUST NOT
+  accept search request bodies.
+
+Because parameter groups are bound through the upstream conformance
+classes, this binding presumes the API also serves `GET /collections`
+under Collection Search — advertising the upstream classes without that
+endpoint would claim conformance the implementation cannot satisfy.
+Advertising only the marker class binds no search parameters.
 
 ### Transactions (Management)
 These endpoints allow for the dynamic creation and deletion of the federation structure. 
