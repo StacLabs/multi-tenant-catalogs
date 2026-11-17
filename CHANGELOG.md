@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Core Collection Updates:** Reworded the note in Scoped Collection Update (Section 2.1). Implementations SHOULD now keep a collection's `parent_ids` when it is updated through the core `PUT /collections/{collectionId}` route. The previous note told clients to update collections only through the scoped route because the core route could lose the hierarchy; clients still SHOULD do so where an implementation doesn't preserve `parent_ids`.
 - **Scoped Collection Extension Links:** `GET /catalogs/{catalogId}/collections/{collectionId}` SHOULD now include the links that implemented extensions (such as Filter, Sort and Aggregation) define on `/collections/{collectionId}`, with the same `rel`. The `href` MAY point to the global endpoint or to a scoped equivalent.
+- **Scoped Extension Paths:** A scoped equivalent of a global extension endpoint MAY use the global path below `/catalogs/{catalogId}`, for example `/catalogs/{catalogId}/collections/{collectionId}/sortables`. Only the queryables paths are reserved.
 - **Sub-Catalog Conformance:** Added a section on what `GET /catalogs/{catalogId}/conformance` lists: it SHOULD list the classes the scoped endpoints implement and SHOULD NOT list classes that only the global endpoints implement. A `conformsTo` array on `/catalogs/{catalogId}` MUST list the same classes. The Filter Extension & Queryables rule now checks this endpoint instead of the Sub-Catalog Landing Page.
 
 ### Fixed
